@@ -1,0 +1,476 @@
+{
+  "database": "india-hospital-bill-rules",
+  "schema_version": "1.0.0",
+  "as_of": "2026-10-04",
+  "description": "Every distinct legal instrument referenced by rules.json, with the rules that depend on it.",
+  "count": 17,
+  "documents": [
+    {
+      "document_id": "DOC-12-2017-CENTRAL-TAX-RATE",
+      "document_number": "12/2017-Central Tax (Rate)",
+      "title": "Notification No. 12/2017-Central Tax (Rate) - Exemption on supply of services",
+      "document_type": "EXEMPTION_NOTIFICATION",
+      "issuing_authority": "Central Board of Indirect Taxes and Customs (CBIC) / GST Council",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "12/2017-Central Tax (Rate) dated 28.06.2017",
+        "entry": "Sl. No. 74, Heading 9993, clause (a)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2017-07-01",
+      "effective_until": "",
+      "official_url": "https://cbic-gst.gov.in/hindi/pdf/central-tax-rate/Notification12-CGST.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "GST-IN-HC-001",
+        "GST-IN-HC-002",
+        "GST-IN-HC-003",
+        "GST-IN-HC-004",
+        "GST-IN-HC-012",
+        "GST-IN-HC-013",
+        "GST-IN-HC-014"
+      ]
+    },
+    {
+      "document_id": "DOC-07-2022-CENTRAL-TAX-RATE",
+      "document_number": "07/2022-Central Tax (Rate)",
+      "title": "Notification No. 07/2022-Central Tax (Rate) dated 13.07.2022 (amending Notification No. 02/2017-Central Tax (Rate), G.S.R. 674(E))",
+      "document_type": "AMENDING_NOTIFICATION",
+      "issuing_authority": "Ministry of Finance, Department of Revenue (on GST Council recommendation)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "07/2022-CT(R) dated 13.07.2022",
+        "entry": "Sl. No. 74, clause (a), proviso (3)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2022-07-13",
+      "effective_until": "",
+      "official_url": "https://cbic-gst.gov.in/hindi/central-tax-rate.html",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "GST-IN-HC-005",
+        "GST-IN-HC-006"
+      ]
+    },
+    {
+      "document_id": "DOC-CIRCULAR-NO-2-12-2018-GST",
+      "document_number": "Circular No. 2/12/2018-GST",
+      "title": "Circular No. 2/12/2018-GST - Clarification on certain issues relating to levy of GST on supply of services",
+      "document_type": "CIRCULAR",
+      "issuing_authority": "Central Board of Indirect Taxes and Customs (CBIC)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "",
+        "circular": "Circular No. 2/12/2018-GST",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2017-07-01",
+      "effective_until": "2022-07-12",
+      "official_url": "https://cbic-gst.gov.in/pdf/circularno-27-gst.pdf",
+      "source_verified": true,
+      "status": "SUPERSEDED",
+      "superseded_by_documents": [
+        "07/2022-Central Tax (Rate)"
+      ],
+      "rule_ids": [
+        "GST-IN-HC-007"
+      ],
+      "superseded_by_rule_ids": [
+        "GST-IN-HC-005"
+      ]
+    },
+    {
+      "document_id": "DOC-CIRCULAR-NO-32-06-2018-GST",
+      "document_number": "Circular No. 32/06/2018-GST",
+      "title": "Circular No. 32/06/2018-GST - Clarification on certain issues relating to levy of GST on supply of services",
+      "document_type": "CIRCULAR",
+      "issuing_authority": "Central Board of Indirect Taxes and Customs (CBIC)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "",
+        "rule": "",
+        "notification": "12/2017-CT(R)",
+        "entry": "Sl. No. 74",
+        "circular": "Circular No. 32/06/2018-GST",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2018-02-12",
+      "effective_until": "",
+      "official_url": "https://cbic-gst.gov.in/pdf/circularno-32-cgst.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "GST-IN-HC-008",
+        "GST-IN-HC-009",
+        "GST-IN-HC-010"
+      ]
+    },
+    {
+      "document_id": "DOC-CIRCULAR-NO-177-09-2022-GST",
+      "document_number": "Circular No. 177/09/2022-GST",
+      "title": "Circular No. 177/09/2022-GST - Clarifications regarding applicable GST rates & exemptions on certain services",
+      "document_type": "CIRCULAR",
+      "issuing_authority": "CBIC",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "",
+        "rule": "",
+        "notification": "12/2017-CT(R)",
+        "entry": "Sl. No. 74; para 2(zg)",
+        "circular": "Circular No. 177/09/2022-GST",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2022-08-03",
+      "effective_until": "",
+      "official_url": "https://cbic-gst.gov.in/pdf/cir-177-08-2022-cgst.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "GST-IN-HC-011"
+      ]
+    },
+    {
+      "document_id": "DOC-REVISED-USER-GUIDELINES-ON-NATIONAL-HEALTH-BENEFIT-PACKAGES-",
+      "document_number": "",
+      "title": "Revised User Guidelines on National Health Benefit Packages (HBP 2.0, 2.1, 2.2 and 2022)",
+      "document_type": "SCHEME_GUIDELINE",
+      "issuing_authority": "National Health Authority (NHA), Ministry of Health and Family Welfare",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 5 and Section 5.1 (Package Rates)",
+        "circular": "",
+        "order": "O.M. No. S-12012/183/2022-NHA (Pt.1), dated 01.02.2022",
+        "schedule": ""
+      },
+      "effective_from": "2022-04-08",
+      "effective_until": "",
+      "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "PKG-PMJAY-001",
+        "PKG-PMJAY-002",
+        "PKG-PMJAY-003",
+        "PKG-PMJAY-004"
+      ]
+    },
+    {
+      "document_id": "DOC-REVISED-USER-GUIDELINES-ON-NHBP-OPERATION-MANUAL-FOR-AB-PM-J",
+      "document_number": "",
+      "title": "Revised User Guidelines on NHBP / Operation Manual for AB PM-JAY (Do's and Don'ts for Empanelled Healthcare Providers)",
+      "document_type": "SCHEME_GUIDELINE",
+      "issuing_authority": "National Health Authority",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 5.1; Section 2.5",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2022-04-01",
+      "effective_until": "",
+      "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "PKG-PMJAY-005"
+      ]
+    },
+    {
+      "document_id": "DOC-REVISED-USER-GUIDELINES-ON-NATIONAL-HEALTH-BENEFIT-PACKAGES-",
+      "document_number": "",
+      "title": "Revised User Guidelines on National Health Benefit Packages (HBP 2.0, 2.1, 2.2 and 2022) - Annexure 6",
+      "document_type": "SCHEME_GUIDELINE",
+      "issuing_authority": "National Health Authority",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "Annexure 6 - Exclusions to the Policy",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2022-04-01",
+      "effective_until": "",
+      "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "PKG-PMJAY-006"
+      ]
+    },
+    {
+      "document_id": "DOC-REVISED-USER-GUIDELINES-ON-NATIONAL-HEALTH-BENEFIT-PACKAGES-",
+      "document_number": "",
+      "title": "Revised User Guidelines on National Health Benefit Packages - Section 3.11",
+      "document_type": "SCHEME_GUIDELINE",
+      "issuing_authority": "National Health Authority",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "Sections 3.11, 3.11.1, 3.11.2, 5.6",
+        "circular": "",
+        "order": "O.M. No. S-12012/183/2022-NHA(Pt.1) dated 01.02.2022; O.M. No. S-12018/353/2023-NHA dated 13.02.2026",
+        "schedule": ""
+      },
+      "effective_from": "2022-02-01",
+      "effective_until": "",
+      "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "PKG-PMJAY-007"
+      ]
+    },
+    {
+      "document_id": "DOC-REVISED-USER-GUIDELINES-ON-NATIONAL-HEALTH-BENEFIT-PACKAGES-",
+      "document_number": "",
+      "title": "Revised User Guidelines on National Health Benefit Packages - Section 9.1(g)",
+      "document_type": "SCHEME_GUIDELINE",
+      "issuing_authority": "National Health Authority",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 9.1(g)",
+        "circular": "",
+        "order": "O.M. No. S-12012/183/2022-NHA (Pt.1), 01.02.2022",
+        "schedule": ""
+      },
+      "effective_from": "2022-02-01",
+      "effective_until": "",
+      "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "PKG-PMJAY-008"
+      ]
+    },
+    {
+      "document_id": "DOC-HBP-2022-AB-PM-JAY-PACKAGE-MASTER",
+      "document_number": "",
+      "title": "HBP 2022 AB PM-JAY Package Master",
+      "document_type": "SCHEME_RATE_MASTER",
+      "issuing_authority": "National Health Authority",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "Implant mapped / implant cost columns",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2022-04-06",
+      "effective_until": "",
+      "official_url": "https://nha.gov.in/strapi/uploads/HBP_2022_14bf060cbb.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "PKG-PMJAY-009"
+      ]
+    },
+    {
+      "document_id": "DOC-OPERATION-MANUAL-FOR-AB-PM-JAY-DO-S-AND-DON-TS-FOR-EMPANELLE",
+      "document_number": "",
+      "title": "Operation Manual for AB PM-JAY - Do's and Don'ts for Empanelled Healthcare Providers",
+      "document_type": "SCHEME_GUIDELINE",
+      "issuing_authority": "National Health Authority",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "Annexure 1 - Do's and Don'ts",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2022-04-01",
+      "effective_until": "",
+      "official_url": "https://nha.gov.in/strapi/uploads/Operation_Manual_for_AB_PM_JAY_5b8795878a.pdf",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "PKG-PMJAY-010"
+      ]
+    },
+    {
+      "document_id": "DOC-IRDAI-HLT-REG-CIR-193-07-2020",
+      "document_number": "IRDAI/HLT/REG/CIR/193/07/2020",
+      "title": "Master Circular on Standardization of Health Insurance Products",
+      "document_type": "REGULATORY_CIRCULAR",
+      "issuing_authority": "Insurance Regulatory and Development Authority of India (IRDAI)",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34(1)(a)",
+        "rule": "",
+        "notification": "IRDAI (Health Insurance) Regulations, 2016 - Regulation 2(i)(o), 18, 31(e) and 37",
+        "entry": "Section 1, Chapter III, Annexure I, paragraph 2",
+        "circular": "IRDAI/HLT/REG/CIR/193/07/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2020-07-22",
+      "effective_until": "",
+      "official_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "INS-IRDAI-001",
+        "INS-IRDAI-002",
+        "INS-IRDAI-003",
+        "INS-IRDAI-004",
+        "INS-IRDAI-005",
+        "INS-IRDAI-007",
+        "INS-IRDAI-010"
+      ]
+    },
+    {
+      "document_id": "DOC-IRDAI-HLT-REG-CIR-151-06-2020",
+      "document_number": "IRDAI/HLT/REG/CIR/151/06/2020",
+      "title": "Modified Guidelines on Product filing in Health Insurance Business - Norms on Proportionate Deductions",
+      "document_type": "REGULATORY_CIRCULAR",
+      "issuing_authority": "IRDAI",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34",
+        "rule": "",
+        "notification": "",
+        "entry": "Clause 3 and Clause 8",
+        "circular": "IRDAI/HLT/REG/CIR/151/06/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2020-10-01",
+      "effective_until": "",
+      "official_url": "https://irdai.gov.in/documents/37343/365525/Modified+Guidelines+on+Product+filing+in+Health+Insurance+Business-Norms+on.pdf/7b50effc-e553-f0a6-389d-3ca90ab11af5",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "INS-IRDAI-006"
+      ]
+    },
+    {
+      "document_id": "DOC-AMENDMENT-TO-IRDAI-HLT-REG-CIR-177-09-2019-AND-176-09-2019",
+      "document_number": "Amendment to IRDAI/HLT/REG/CIR/177/09/2019 and /176/09/2019",
+      "title": "Amendments in respect of provisions of Guidelines on Standardization of Exclusions in Health Insurance Contracts",
+      "document_type": "REGULATORY_CIRCULAR_AMENDMENT",
+      "issuing_authority": "IRDAI",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34",
+        "rule": "",
+        "notification": "",
+        "entry": "Chapter III, Exclusion K (Excl11)",
+        "circular": "Amendment to IRDAI/HLT/REG/CIR/177/09/2019",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2020-02-10",
+      "effective_until": "",
+      "official_url": "https://irdai.gov.in/documents/37343/365525/Amendments+in+respect+of+provisions+of+Guidelines+on+Standardization+of+Exc.pdf/fe4822bf-c5eb-de32-d65a-868067bccaab",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "INS-IRDAI-008"
+      ]
+    },
+    {
+      "document_id": "DOC-IRDAI-HLT-CIR-PRO-84-5-2024",
+      "document_number": "IRDAI/HLT/CIR/PRO/84/5/2024",
+      "title": "Master Circular on IRDAI (Insurance Products) Regulations, 2024 - Health Insurance",
+      "document_type": "REGULATORY_CIRCULAR",
+      "issuing_authority": "IRDAI",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34",
+        "rule": "",
+        "notification": "IRDAI (Insurance Products) Regulations, 2024",
+        "entry": "Chapter I, item 16",
+        "circular": "IRDAI/HLT/CIR/PRO/84/5/2024",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "2024-05-29",
+      "effective_until": "",
+      "official_url": "https://irdai.gov.in/en/document-detail?documentId=4942918",
+      "source_verified": true,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "INS-IRDAI-009"
+      ]
+    },
+    {
+      "document_id": "DOC-INTERNAL-AUDIT-CONTROL",
+      "document_number": "",
+      "title": "Internal audit control",
+      "document_type": "DERIVED_CONTROL",
+      "issuing_authority": "Derived control - not a statutory provision",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "effective_from": "",
+      "effective_until": "",
+      "official_url": "",
+      "source_verified": false,
+      "status": "IN_FORCE",
+      "superseded_by_documents": [],
+      "rule_ids": [
+        "ENG-DUP-001",
+        "ENG-EVID-001",
+        "ENG-GST-ARITH-001"
+      ]
+    }
+  ]
+}

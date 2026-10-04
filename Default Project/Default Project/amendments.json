@@ -1,0 +1,50 @@
+{
+  "database": "india-hospital-bill-rules",
+  "schema_version": "1.0.0",
+  "as_of": "2026-10-04",
+  "description": "Chronological change log. Evaluation is date-aware: pick the rule whose effective window contains the bill/invoice date.",
+  "evaluation_contract": "A rule applies when effective_from <= date < effective_until. Empty effective_until means still in force.",
+  "count": 4,
+  "amendments": [
+    {
+      "amendment_id": "AMD-GST-IN-HC-007",
+      "type": "SUPERSESSION",
+      "affected_rule_id": "GST-IN-HC-007",
+      "affected_statement": "CBIC confirmed that rent on rooms provided to in-patients is exempt. This was the position for bills dated before the INR 5,000 threshold was introduced on 13.07.2022.",
+      "superseded_by_rule_id": "GST-IN-HC-005",
+      "superseding_document": "07/2022-Central Tax (Rate)",
+      "change_date": "2022-07-13",
+      "note": "Historical room-rent exemption position replaced from the date the amending notification took effect."
+    },
+    {
+      "amendment_id": "AMD-GST-IN-HC-005",
+      "type": "AMENDING_INSTRUMENT",
+      "affected_rule_id": "GST-IN-HC-005",
+      "affected_statement": "The healthcare-services exemption does NOT apply to a room supplied by a clinical establishment, other than an ICU / CCU / ICCU / NICU, where the room charges exceed INR 5,000 per day, to a person receiving healthcare services.",
+      "superseded_by_rule_id": "",
+      "superseding_document": "07/2022-Central Tax (Rate)",
+      "change_date": "2022-07-13",
+      "note": "07/2022-Central Tax (Rate), dt. 13-07-2022 - Seeks to amend notification No. 2/2017- Central Tax (Rate)"
+    },
+    {
+      "amendment_id": "AMD-GST-IN-HC-006",
+      "type": "AMENDING_INSTRUMENT",
+      "affected_rule_id": "GST-IN-HC-006",
+      "affected_statement": "ICU, CCU, ICCU and NICU room charges are carved OUT of the INR 5,000-per-day carve-out in Sl. No. 74, so they continue to be covered by the healthcare services exemption irrespective of the per-day amount charged.",
+      "superseded_by_rule_id": "",
+      "superseding_document": "07/2022-Central Tax (Rate)",
+      "change_date": "2022-07-13",
+      "note": "07/2022-Central Tax (Rate), dt. 13-07-2022 - Seeks to amend notification No. 2/2017- Central Tax (Rate)"
+    },
+    {
+      "amendment_id": "AMD-INS-IRDAI-008",
+      "type": "AMENDING_INSTRUMENT",
+      "affected_rule_id": "INS-IRDAI-008",
+      "affected_statement": "Expenses incurred towards treatment in any hospital or by any Medical Practitioner or any other provider specifically excluded by the Insurer and disclosed in its website / notified to the policyholders are not admissible. However, in case of life threatening situations or following an accident, expenses up to the stage of stabilization are payable but not the complete claim.",
+      "superseded_by_rule_id": "",
+      "superseding_document": "Amendment to IRDAI/HLT/REG/CIR/177/09/2019 and /176/09/2019",
+      "change_date": "2020-02-10",
+      "note": "Expenses incurred towards treatment in any hospital or by any Medical Practitioner or any other provider specifically excluded by the Insurer and disclosed in its website / notified to the policyholders are not admissible. However, in case of life threatening situations or following an accident, expenses up to the stage of stabilization are payable but not the complete claim.\n\n(Explanation: Detail"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HospitalBillingRule",
+  "type": "object",
+  "required": [
+    "rule_id",
+    "authority",
+    "order_number",
+    "title",
+    "category",
+    "statutory_citation",
+    "effective_date"
+  ],
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "description": "Unique identifier for statutory rule"
+    },
+    "authority": {
+      "type": "string",
+      "enum": ["CGHS", "PMJAY", "STATE_GOVT", "NPPA", "CONSUMER_COMMISSION"],
+      "description": "Issuing regulatory body"
+    },
+    "order_number": {
+      "type": "string",
+      "description": "Official Gazette / Office Memorandum notification reference"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable rule title"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Intensive Care",
+        "Accommodation",
+        "Consumables & Overheads",
+        "Professional Fees",
+        "Pharmacy & Implants",
+        "Diagnostics"
+      ]
+    },
+    "statutory_cap_rate": {
+      "type": ["number", "null"],
+      "description": "Maximum permissible INR charge per unit"
+    },
+    "is_unbundling_prohibited": {
+      "type": "boolean",
+      "description": "Whether separate billing of this item is prohibited when packaged"
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "gazette_citation": {
+      "type": "string",
+      "description": "Full formal legal citation"
+    }
+  }
+}

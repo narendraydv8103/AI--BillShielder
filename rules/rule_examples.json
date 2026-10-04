@@ -1,0 +1,1076 @@
+{
+  "database": "india-hospital-bill-rules",
+  "schema_version": "1.0.0",
+  "as_of": "2026-10-04",
+  "description": "Regression suite. Every expected_outcome is derivable from rules.json alone; no case requires a figure that rules.json does not encode.",
+  "design_goals": [
+    "Cover every threshold boundary, including the exact INR 5,000/day equality case.",
+    "Prove date-awareness: identical clinical facts yield different tax outcomes on either side of 2022-07-13.",
+    "Prove the ICU/CCU/ICCU/NICU carve-out is not mis-flagged.",
+    "Prove GST and scheme payability are independent dimensions.",
+    "Prove the engine refuses to invent a rate, a room-rent limit or a clinical rule.",
+    "Prove legitimate repetition and daily items are not flagged as duplicates."
+  ],
+  "count": 39,
+  "examples": [
+    {
+      "example_id": "EX-GST-001",
+      "title": "Room charge at INR 4,000/day - exempt, no GST",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-001",
+        "GST-IN-HC-005"
+      ],
+      "scenario": "Private patient, general ward, 3 days, room charged INR 4,000/day.",
+      "inputs": {
+        "supplier_type": "clinical_establishment",
+        "line": {
+          "description": "Room charges - general ward",
+          "quantity": 3,
+          "unit_price": 4000,
+          "amount": 12000
+        },
+        "room_charge_per_day": 4000,
+        "room_category": "GENERAL_WARD"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%",
+          "cgst": "Nil",
+          "sgst": "Nil",
+          "igst": "Nil"
+        },
+        "finding": null
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "Room rent per day is within INR 5,000 and the room is not ICU/CCU/ICCU/NICU, so it remains part of the exempt healthcare service under Sl. No. 74 of Notification 12/2017-CT(R)."
+    },
+    {
+      "example_id": "EX-GST-002",
+      "title": "Room charge exactly INR 5,000/day - still exempt (boundary)",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-005"
+      ],
+      "scenario": "General ward at exactly the INR 5,000/day threshold.",
+      "inputs": {
+        "room_charge_per_day": 5000,
+        "room_category": "GENERAL_WARD"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "finding": null
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "GST-IN-HC-005 is a strict '>' comparison. INR 5,000 is within the threshold. Boundary test guards against an off-by-one implementation."
+    },
+    {
+      "example_id": "EX-GST-003",
+      "title": "Room charge INR 6,000/day - exemption lost, rate must be resolved",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-005"
+      ],
+      "scenario": "General ward charged INR 6,000/day after 13.07.2022.",
+      "inputs": {
+        "room_charge_per_day": 6000,
+        "room_category": "GENERAL_WARD",
+        "invoice_date": "2026-08-01"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "TAXABLE",
+          "rate": "REFER_TO_RATE_NOTIFICATION_IN_FORCE_ON_INVOICE_DATE"
+        },
+        "finding": "GST_RATE_UNRESOLVED_AT_ENGINE_TIME",
+        "action": "resolve rate from CGST rate notification in force on invoice_date, else INSUFFICIENT_EVIDENCE"
+      },
+      "expected_finding_code": "GST_RATE_UNRESOLVED_AT_ENGINE_TIME",
+      "severity": "INFO",
+      "finding_target": "",
+      "rationale": "Above INR 5,000/day the room supply leaves the exemption. The database deliberately does not hard-code the rate; asserting a rate without the in-force notification would be an invention."
+    },
+    {
+      "example_id": "EX-GST-004",
+      "title": "ICU room charge above INR 5,000/day - still exempt",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-005",
+        "GST-IN-HC-001"
+      ],
+      "scenario": "ICU bed at INR 9,500/day; the carve-out applies.",
+      "inputs": {
+        "room_charge_per_day": 9500,
+        "room_category": "ICU"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "finding": null
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "GST-IN-HC-005 applies only to rooms OTHER THAN ICU/CCU/ICCU/NICU. An ICU room above the threshold stays exempt. This is the highest-value exception test in the suite."
+    },
+    {
+      "example_id": "EX-GST-005",
+      "title": "Historical room rent before 13.07.2022 - fully exempt, no threshold",
+      "bill_date": "2022-06-01",
+      "rule_ids": [
+        "GST-IN-HC-007",
+        "GST-IN-HC-005"
+      ],
+      "scenario": "Invoice dated 01.06.2022 with general ward at INR 9,000/day.",
+      "inputs": {
+        "room_charge_per_day": 9000,
+        "room_category": "GENERAL_WARD"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "finding": null,
+        "applied_rule_id": "GST-IN-HC-007"
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "Date-aware evaluation selects the superseded circular rule whose window ends 2022-07-12. The INR 5,000 threshold did not exist for this invoice. Confirms supersession handling."
+    },
+    {
+      "example_id": "EX-GST-006",
+      "title": "Same bill one month later - threshold now applies",
+      "bill_date": "2022-08-01",
+      "rule_ids": [
+        "GST-IN-HC-005",
+        "GST-IN-HC-007"
+      ],
+      "scenario": "Invoice dated 01.08.2022 with general ward at INR 9,000/day.",
+      "inputs": {
+        "room_charge_per_day": 9000,
+        "room_category": "GENERAL_WARD"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "TAXABLE",
+          "rate": "REFER_TO_RATE_NOTIFICATION_IN_FORCE_ON_INVOICE_DATE"
+        },
+        "finding": "GST_RATE_UNRESOLVED_AT_ENGINE_TIME"
+      },
+      "expected_finding_code": "GST_RATE_UNRESOLVED_AT_ENGINE_TIME",
+      "severity": "INFO",
+      "finding_target": "",
+      "rationale": "Same clinical facts, different invoice date, different tax outcome. Demonstrates that the engine must be date-aware rather than pattern-matching on amount alone."
+    },
+    {
+      "example_id": "EX-GST-007",
+      "title": "Outpatient visitor food billed nil-GST by the hospital",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-010",
+        "ENG-DUP-001"
+      ],
+      "scenario": "Hospital raises 'caterer charges - visitor meals' at 0% GST while an outsourced caterer invoice exists.",
+      "inputs": {
+        "line": {
+          "description": "Caterer charges - visitor meals",
+          "quantity": 2,
+          "unit_price": 350,
+          "gst_rate_shown": "0%"
+        },
+        "outsourced_caterer_invoice_present": true
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "TAXABLE"
+        },
+        "finding": "GST_NOT_APPLICABLE_TO_SUPPLIER",
+        "severity_hint": "MEDIUM"
+      },
+      "expected_finding_code": "GST_NOT_APPLICABLE_TO_SUPPLIER",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Circular 177/09/2022 makes the caterer the supplier. A nil-GST line raised by the hospital against an outsourced caterer invoice is a taxability error."
+    },
+    {
+      "example_id": "EX-GST-008",
+      "title": "Inpatient food - exempt",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-008",
+        "GST-IN-HC-001"
+      ],
+      "scenario": "Diet charged to an admitted patient as part of the healthcare service.",
+      "inputs": {
+        "line": {
+          "description": "Patient diet - general",
+          "quantity": 3,
+          "unit_price": 250
+        },
+        "patient_status": "INPATIENT"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "finding": null
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "Circular 32/06/2018 confirms food supplied to an in-patient is part of the exempt composite healthcare service. Guards against over-flagging every food line."
+    },
+    {
+      "example_id": "EX-GST-009",
+      "title": "IVF procedure - GST exempt but scheme non-payable",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-011",
+        "PKG-PMJAY-006"
+      ],
+      "scenario": "IVF cycle billed on an AB PM-JAY bill with GST shown as Nil.",
+      "inputs": {
+        "line": {
+          "description": "IVF cycle - IVF-1",
+          "quantity": 1,
+          "unit_price": 120000,
+          "gst_rate_shown": "0%"
+        },
+        "scheme": "AB_PM_JAY"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "gst_finding": null,
+        "scheme_finding": "SCHEME_NON_PAYABLE_ITEM"
+      },
+      "expected_finding_code": "SCHEME_NON_PAYABLE_ITEM",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "The two findings are independent and both correct: GST-exempt under Sl. No. 74, yet excluded from PM-JAY cover under Annexure 6. A naive engine would either wrongly tax it or wrongly pay it."
+    },
+    {
+      "example_id": "EX-GST-010",
+      "title": "Cosmetic surgery - not a health care service",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-014",
+        "GST-IN-HC-002"
+      ],
+      "scenario": "Elective rhinoplasty billed by a clinical establishment.",
+      "inputs": {
+        "line": {
+          "description": "Rhinoplasty - cosmetic",
+          "quantity": 1,
+          "unit_price": 85000,
+          "gst_rate_shown": "0%"
+        }
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "TAXABLE",
+          "rate": "REFER_TO_RATE_NOTIFICATION_IN_FORCE_ON_INVOICE_DATE"
+        },
+        "finding": "GST_EXEMPTION_CARVE_OUT"
+      },
+      "expected_finding_code": "GST_EXEMPTION_CARVE_OUT",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Sl. No. 74 excludes cosmetic surgery except where undertaken to restore anatomy/functions after congenital defect, injury or trauma. Restorative cases fall back to GST-IN-HC-001."
+    },
+    {
+      "example_id": "EX-GST-011",
+      "title": "Ambulance charges by the hospital - exempt",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-004",
+        "GST-IN-HC-001"
+      ],
+      "scenario": "Hospital ambulance used for inter-hospital transfer.",
+      "inputs": {
+        "line": {
+          "description": "Ambulance charges - transfer",
+          "quantity": 1,
+          "unit_price": 4500
+        },
+        "supplier": "clinical_establishment"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "finding": null
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "Sl. No. 74(b) exempts transportation of patients in an ambulance other than those in (a). Third-party ambulance operators are outside this rule and must be assessed separately."
+    },
+    {
+      "example_id": "EX-GST-012",
+      "title": "Doctors' professional fees - exempt",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-012",
+        "GST-IN-HC-009"
+      ],
+      "scenario": "Separate line for visiting consultant professional fees.",
+      "inputs": {
+        "line": {
+          "description": "Professional fee - Dr A",
+          "quantity": 4,
+          "unit_price": 800
+        },
+        "retained_by_hospital": false
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "finding": null
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "Exemption applies to professional fees of doctors/consultants and the hospital is not the supplier of that service. Avoids a false 'hospital overcharged' finding."
+    },
+    {
+      "example_id": "EX-GST-013",
+      "title": "Standalone pathology lab - diagnostics are exempt",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-003",
+        "GST-IN-HC-001"
+      ],
+      "scenario": "Independent diagnostic laboratory invoices a patient's blood test at nil GST.",
+      "inputs": {
+        "supplier": "standalone pathology laboratory",
+        "line": {
+          "description": "CBC",
+          "quantity": 1,
+          "unit_price": 450,
+          "gst_rate_shown": "0%"
+        }
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "finding": null
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "Para 2(s) covers a place established as an independent entity to carry out diagnostic services, so the lab is a clinical establishment and the supply is exempt."
+    },
+    {
+      "example_id": "EX-GST-014",
+      "title": "Pharmacy selling medicines - not a clinical establishment",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-003",
+        "GST-IN-HC-014"
+      ],
+      "scenario": "Retail medical store inside a hospital complex bills a patient for medicines at nil GST.",
+      "inputs": {
+        "supplier": "pharmacy / medical store",
+        "line": {
+          "description": "Medicines",
+          "quantity": 1,
+          "amount": 1200,
+          "gst_rate_shown": "0%"
+        }
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "TAXABLE",
+          "rate": "REFER_TO_RATE_NOTIFICATION_IN_FORCE_ON_INVOICE_DATE"
+        },
+        "finding": "SUPPLIER_NOT_CLINICAL_ESTABLISHMENT"
+      },
+      "expected_finding_code": "SUPPLIER_NOT_CLINICAL_ESTABLISHMENT",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "A goods vendor is outside para 2(s), so the healthcare exemption cannot be inherited merely because the store sits inside a hospital."
+    },
+    {
+      "example_id": "EX-GST-015",
+      "title": "High-value ICU line at nil GST is correct, not under-taxed",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-006",
+        "GST-IN-HC-005"
+      ],
+      "scenario": "ICU billed INR 20,000/day with nil GST on the ICU line.",
+      "inputs": {
+        "line": {
+          "description": "ICU charges",
+          "quantity": 2,
+          "unit_price": 20000,
+          "gst_rate_shown": "0%"
+        },
+        "room_category": "ICU"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "finding": null,
+        "must_not": "flag as under-taxation"
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "The carve-out holds regardless of amount. This example exists specifically to suppress a plausible-sounding but wrong under-taxation finding."
+    },
+    {
+      "example_id": "EX-GST-016",
+      "title": "Toilet charges - exempt for GST, non-payable for insurance",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "GST-IN-HC-013",
+        "INS-IRDAI-001",
+        "INS-IRDAI-002"
+      ],
+      "scenario": "Hospital charges INR 200/day toilet charges with nil GST on an insured bill.",
+      "inputs": {
+        "line": {
+          "description": "Toilet charges",
+          "quantity": 3,
+          "unit_price": 200,
+          "gst_rate_shown": "0%"
+        },
+        "policy": "retail"
+      },
+      "expected_outcome": {
+        "gst": {
+          "taxability": "EXEMPT",
+          "rate": "0%"
+        },
+        "gst_finding": null,
+        "insurance_finding": "NON_PAYABLE_OR_SUBSUMED"
+      },
+      "expected_finding_code": "NON_PAYABLE_OR_SUBSUMED",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Shows the two dimensions diverging on one line: correct nil GST, yet a classic non-payable/subsumed insurance item. Both assessments are emitted, neither suppresses the other."
+    },
+    {
+      "example_id": "EX-ENG-001",
+      "title": "Line arithmetic error",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "ENG-GST-ARITH-001"
+      ],
+      "scenario": "quantity x unit_price does not equal the billed amount.",
+      "inputs": {
+        "line": {
+          "description": "Injection",
+          "quantity": 6,
+          "unit_price": 145,
+          "billed_amount": 1200
+        },
+        "tolerance": "INR 1 or 1%"
+      },
+      "expected_outcome": {
+        "finding": "ARITHMETIC ERROR on line",
+        "expected_amount": 870,
+        "billed_amount": 1200,
+        "variance": 330
+      },
+      "expected_finding_code": "ARITHMETIC_ERROR",
+      "severity": "HIGH",
+      "finding_target": "",
+      "rationale": "Arithmetic is checked before any legal check; it is law-independent and the lowest-false-positive class of finding."
+    },
+    {
+      "example_id": "EX-ENG-002",
+      "title": "Invoice total does not reconcile with lines plus tax",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "ENG-GST-ARITH-001"
+      ],
+      "scenario": "Sum of line totals plus GST does not equal the invoice total.",
+      "inputs": {
+        "line_totals_sum": 46800,
+        "tax_total": 0,
+        "invoice_total": 51200
+      },
+      "expected_outcome": {
+        "finding": "INVOICE_TOTAL_MISMATCH",
+        "variance": 4400
+      },
+      "expected_finding_code": "INVOICE_TOTAL_MISMATCH",
+      "severity": "HIGH",
+      "finding_target": "",
+      "rationale": "Internal-consistency control. Note this proves internal inconsistency only, not that the correct GST rate was applied."
+    },
+    {
+      "example_id": "EX-ENG-003",
+      "title": "Genuine duplicate injection line",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "ENG-DUP-001"
+      ],
+      "scenario": "Same normalised description charged twice with no whitelist justification.",
+      "inputs": {
+        "lines": [
+          {
+            "description": "Inj. Ceftriaxone 1gm",
+            "quantity": 2,
+            "unit_price": 145
+          },
+          {
+            "description": "inj ceftriaxone 1 gm",
+            "quantity": 2,
+            "unit_price": 145
+          }
+        ],
+        "expected_clinical_frequency": 1
+      },
+      "expected_outcome": {
+        "finding": "POTENTIALLY DUPLICATED",
+        "not": "DUPLICATE",
+        "grouped_line_numbers": [
+          4,
+          9
+        ],
+        "duplicate_value": 290
+      },
+      "expected_finding_code": "POTENTIALLY_DUPLICATED",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Whitelist test ran and failed, so a finding is raised, but the wording stays deliberately non-accusatory and is routed to human adjudication."
+    },
+    {
+      "example_id": "EX-ENG-004",
+      "title": "Repeated daily line is NOT a duplicate",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "ENG-DUP-001",
+        "PKG-PMJAY-005"
+      ],
+      "scenario": "Nursing care charged once per day for a 5-day stay.",
+      "inputs": {
+        "line": {
+          "description": "Nursing care charges",
+          "quantity": 5,
+          "unit_price": 500
+        },
+        "chargeable_days": 5
+      },
+      "expected_outcome": {
+        "finding": null
+      },
+      "expected_finding_code": "OK",
+      "severity": "NONE",
+      "finding_target": "",
+      "rationale": "Daily-item whitelist: quantity equals the number of chargeable days, so the repetition is legitimate. Prevents the most common false positive in duplicate detection."
+    },
+    {
+      "example_id": "EX-ENG-005",
+      "title": "Clinical assertion without an official guideline",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "ENG-EVID-001"
+      ],
+      "scenario": "Attempt to flag a drug as clinically wrong with no official STG in the database.",
+      "inputs": {
+        "line": {
+          "description": "Inj. Ceftriaxone 1gm",
+          "quantity": 2
+        },
+        "official_guideline_available": false
+      },
+      "expected_outcome": {
+        "finding": "REQUIRES_CLINICAL_REVIEW",
+        "evidence_state": "INSUFFICIENT_EVIDENCE",
+        "never": "CONFIRMED_MEDICAL_ERROR"
+      },
+      "expected_finding_code": "REQUIRES_CLINICAL_REVIEW",
+      "severity": "LOW",
+      "finding_target": "",
+      "rationale": "No MoHFW Standard Treatment Guideline text was verified, so the engine may only request clinical review. Directly encodes the coverage_gaps constraint."
+    },
+    {
+      "example_id": "EX-INS-007",
+      "title": "List I optional item - policy review, not auto-rejection",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-002"
+      ],
+      "scenario": "Attendant charges appear on an insured bill.",
+      "inputs": {
+        "line": {
+          "description": "Attendant charges",
+          "quantity": 2,
+          "amount": 1800
+        },
+        "policy_offers_cover": null
+      },
+      "expected_outcome": {
+        "finding": "REQUIRES POLICY REVIEW",
+        "class": "OPTIONAL COVER ITEM",
+        "must_not": "auto-reject"
+      },
+      "expected_finding_code": "REQUIRES_POLICY_REVIEW",
+      "severity": "LOW",
+      "finding_target": "",
+      "rationale": "List I items are optional, so non-payability depends on the policy schedule. With no schedule the engine must ask, not conclude."
+    },
+    {
+      "example_id": "EX-INS-008",
+      "title": "List IV item separately billed - subsumed",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-003"
+      ],
+      "scenario": "Admission/registration charge billed separately from the treatment package.",
+      "inputs": {
+        "line": {
+          "description": "Admission charges",
+          "quantity": 1,
+          "amount": 2500
+        }
+      },
+      "expected_outcome": {
+        "finding": "SUBSUMED INTO COST OF TREATMENT - SEPARATELY BILLED",
+        "payable": 0
+      },
+      "expected_finding_code": "SUBSUMED_INTO_COST_OF_TREATMENT",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "High-yield pattern on Indian bills. Targets the insurer's payable amount only."
+    },
+    {
+      "example_id": "EX-INS-009",
+      "title": "List III surgical consumable - subsumed",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-004"
+      ],
+      "scenario": "Surgical blades and eye kit billed separately on a surgical bill.",
+      "inputs": {
+        "line": {
+          "description": "Surgical blades",
+          "quantity": 1,
+          "amount": 1800
+        }
+      },
+      "expected_outcome": {
+        "finding": "SUBSUMED INTO PROCEDURE CHARGES - SEPARATELY BILLED",
+        "payable": 0
+      },
+      "expected_finding_code": "SUBSUMED_INTO_PROCEDURE_CHARGES",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Procedure-consumable rule, distinct from INS-IRDAI-003 which covers treatment-cost subsumption."
+    },
+    {
+      "example_id": "EX-PMJAY-001",
+      "title": "Patient-payable line inside an AB PM-JAY package",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-010",
+        "PKG-PMJAY-005"
+      ],
+      "scenario": "Empanelled hospital bills the patient for a service already inside the package.",
+      "inputs": {
+        "scheme": "AB_PM_JAY",
+        "line": {
+          "description": "Room charges - general ward",
+          "quantity": 2,
+          "unit_price": 3500,
+          "patient_payable": true
+        },
+        "within_package_content": true
+      },
+      "expected_outcome": {
+        "finding": "PROHIBITED PATIENT CHARGE under the AB PM-JAY empanelment obligations",
+        "escalate_to": "NHA / State Health Agency"
+      },
+      "expected_finding_code": "PROHIBITED_PATIENT_CHARGE",
+      "severity": "HIGH",
+      "finding_target": "",
+      "rationale": "The only rule class here that binds the hospital directly. Contractual/empanelment obligation rather than a tariff statute, which the severity reflects."
+    },
+    {
+      "example_id": "EX-PMJAY-002",
+      "title": "ICU billed without ventilator documentation",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-003"
+      ],
+      "scenario": "Ventilator ICU rate claimed for days without ventilator support documented.",
+      "inputs": {
+        "per_day_billed": {
+          "category": "ICU_WITH_VENTILATOR",
+          "days": 4,
+          "rate": 9000
+        },
+        "documented": {
+          "ventilator_days": 1,
+          "non_ventilator_icu_days": 3
+        }
+      },
+      "expected_outcome": {
+        "finding": "QUANTITY/BED-CATEGORY ANOMALY",
+        "expected_value": 34500,
+        "claimed_value": 36000,
+        "excess": 35000
+      },
+      "expected_finding_code": "QUANTITY_BED_CATEGORY_ANOMALY",
+      "severity": "HIGH",
+      "finding_target": "",
+      "rationale": "Cross-checks claimed bed category against documented days. Correcting ventilator to non-ventilator days is worth INR 8,500 overpayment per day in this example."
+    },
+    {
+      "example_id": "EX-PMJAY-003",
+      "title": "Blood unit above the scheme quantity limit",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-004"
+      ],
+      "scenario": "Six blood units billed where the scheme limit is four.",
+      "inputs": {
+        "line": {
+          "description": "Blood unit",
+          "quantity": 6,
+          "unit_price": 1500
+        }
+      },
+      "expected_outcome": {
+        "finding": "QUANTITY_LIMIT_EXCEEDED",
+        "payable_units": 4,
+        "billed_units": 6,
+        "non_payable_value": 3000
+      },
+      "expected_finding_code": "QUANTITY_LIMIT_EXCEEDED",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Limit binds the scheme payer's payable amount, not the hospital's charge. Quantified as a payment-side exposure."
+    },
+    {
+      "example_id": "EX-PMJAY-004",
+      "title": "High-value package below the scheme approval ceiling",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-007",
+        "PKG-PMJAY-001"
+      ],
+      "scenario": "Package cost sits under INR 5 lakh, so SHA approval applies without prior written pre-authorisation.",
+      "inputs": {
+        "package_cost": 380000,
+        "pre_authorisation_taken": false
+      },
+      "expected_outcome": {
+        "finding": "PRE_AUTHORISATION_MISSING_BUT_DELEGATED",
+        "delegated_to": "State Health Agency"
+      },
+      "expected_finding_code": "PRE_AUTHORISATION_MISSING_BUT_DELEGATED",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "PKG-PMJAY-001 also records that a PM-JAY package rate is a payment rate, never a cap on the hospital's charge to a private patient."
+    },
+    {
+      "example_id": "EX-PMJAY-005",
+      "title": "State tariff above the NHA rate - which side is wrong",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-008",
+        "PKG-PMJAY-001"
+      ],
+      "scenario": "State tariff notified at 110% of the NHA-configured rate.",
+      "inputs": {
+        "nha_configured_rate": 20000,
+        "state_notified_rate": 22000,
+        "scheme_payer": "State government"
+      },
+      "expected_outcome": {
+        "finding": "STATE_TARIFF_AT_NOTIFIED_CEILING",
+        "binding_on": "scheme payer",
+        "not": "hospital charge"
+      },
+      "expected_finding_code": "STATE_TARIFF_AT_NOTIFIED_CEILING",
+      "severity": "LOW",
+      "finding_target": "",
+      "rationale": "Confirms the payer-side binding: 110% is a ceiling on the notified state tariff, and it does not make the hospital's private charge unlawful."
+    },
+    {
+      "example_id": "EX-PMJAY-006",
+      "title": "Family cover exhausted - beyond INR 5 lakh",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-002"
+      ],
+      "scenario": "Cumulative approved treatment crosses the family cover ceiling.",
+      "inputs": {
+        "family_cover_used": 460000,
+        "this_claim": 90000
+      },
+      "expected_outcome": {
+        "finding": "SCHEME_CEILING_EXCEEDED",
+        "payable": 40000,
+        "not_payable": 50000
+      },
+      "expected_finding_code": "SCHEME_CEILING_EXCEEDED",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "INR 5 lakh is a scheme payment ceiling, never a cap on what the hospital may bill."
+    },
+    {
+      "example_id": "EX-PMJAY-007",
+      "title": "Implant billed above the mapped rate",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-009"
+      ],
+      "scenario": "Coronary stent billed above the mapped implant rate for the booked package.",
+      "inputs": {
+        "line": {
+          "description": "Coronary stent - drug eluting",
+          "quantity": 2,
+          "unit_price": 42000
+        },
+        "mapped_implant_rate": 34128
+      },
+      "expected_outcome": {
+        "finding": "ABOVE IMPLANT RATE",
+        "payable_reference": 68256,
+        "excess": 15744
+      },
+      "expected_finding_code": "ABOVE_IMPLANT_RATE",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Devices are evaluated against the implant rate mapped to the package, never against the procedure package rate."
+    },
+    {
+      "example_id": "EX-PMJAY-008",
+      "title": "Device that maps to no package",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-009"
+      ],
+      "scenario": "A device billed under a package with no mapped device.",
+      "inputs": {
+        "line": {
+          "description": "Intravascular ultrasound catheter",
+          "quantity": 1,
+          "unit_price": 55000
+        }
+      },
+      "expected_outcome": {
+        "finding": "DEVICE MAPPING MISMATCH",
+        "action": "escalate to NHA / State Health Agency for rate determination"
+      },
+      "expected_finding_code": "DEVICE_MAPPING_MISMATCH",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "The engine reports the missing mapping rather than guessing a rate from a similar device."
+    },
+    {
+      "example_id": "EX-INS-001",
+      "title": "Room rent limit must come from the policy, not a government rate",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-005"
+      ],
+      "scenario": "Auditing a private room-rent line with no policy schedule available.",
+      "inputs": {
+        "room_rent_per_day": 7000,
+        "policy_schedule_available": false
+      },
+      "expected_outcome": {
+        "finding": "INSUFFICIENT_EVIDENCE",
+        "must_not": "fall back to a government or scheme rate"
+      },
+      "expected_finding_code": "INSUFFICIENT_EVIDENCE",
+      "severity": "LOW",
+      "finding_target": "",
+      "rationale": "The central engine guarantee: no government-imposed maximum room rent exists for a private Indian hospital bill, so an absent policy schedule blocks the check."
+    },
+    {
+      "example_id": "EX-INS-002",
+      "title": "Room category upgrade - deduction on associated expenses",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-006",
+        "INS-IRDAI-005"
+      ],
+      "scenario": "Patient occupies a higher category than the policy covers and the policy defines associated medical expenses.",
+      "inputs": {
+        "policy_eligible_category": "GENERAL_WARD",
+        "actual_category": "ICU",
+        "associated_medical_expenses": 60000,
+        "room_rent_differential": 4500,
+        "associated_defined_in_policy": true
+      },
+      "expected_outcome": {
+        "finding": "INSURANCE_REVIEW",
+        "target": "insurer payable amount",
+        "deduction_basis": "proportionate on associated medical expenses",
+        "room_rent_differential": "generally not cut"
+      },
+      "expected_finding_code": "INSURANCE_REVIEW_PROPORTIONATE_DEDUCTION",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Must be raised against the insurer's payable amount, never as a hospital overcharge. Keeps the two sides of the bill clearly separated."
+    },
+    {
+      "example_id": "EX-INS-003",
+      "title": "Non-payable room rent item",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-001"
+      ],
+      "scenario": "A room-rent item that appears on the IRDAI non-payable list.",
+      "inputs": {
+        "line": {
+          "description": "Room rent - deluxe cabin",
+          "quantity": 2,
+          "amount": 24000
+        },
+        "policy_room_rent_limit": 5000
+      },
+      "expected_outcome": {
+        "finding": "NON_PAYABLE_ITEM",
+        "payable": 0,
+        "escalate_to": "insurer / TPAs"
+      },
+      "expected_finding_code": "NON_PAYABLE_ITEM",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Insurance Lists I-IV mark the item non-payable for the insurer while the hospital charge itself may stand. Two independent assessments on the same line."
+    },
+    {
+      "example_id": "EX-INS-004",
+      "title": "Discharge delay beyond three hours charged to the patient",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-009"
+      ],
+      "scenario": "Hospital adds waiting charges after an authorisation delay past three hours.",
+      "inputs": {
+        "line": {
+          "description": "Waiting charges - discharge delay",
+          "quantity": 1,
+          "amount": 2500,
+          "patient_payable": true
+        },
+        "authorisation_delay_hours": 5
+      },
+      "expected_outcome": {
+        "finding": "INSURER_OBLIGATION",
+        "borne_by": "insurer from shareholder's fund",
+        "not": "policyholder"
+      },
+      "expected_finding_code": "INSURER_OBLIGATION_DISCHARGE_DELAY",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "One of the few rules placing a cost on the insurer rather than the hospital."
+    },
+    {
+      "example_id": "EX-INS-005",
+      "title": "Cosmetic procedure excluded under the policy",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-007",
+        "INS-IRDAI-008"
+      ],
+      "scenario": "Policy carries the standardised exclusion for a non-trauma cosmetic procedure.",
+      "inputs": {
+        "line": {
+          "description": "Liposuction",
+          "quantity": 1,
+          "amount": 95000
+        },
+        "stabilisation_stage_reached": true
+      },
+      "expected_outcome": {
+        "finding": "STANDARDISED_EXCLUSION_APPLIES",
+        "payable": 0
+      },
+      "expected_finding_code": "STANDARDISED_EXCLUSION_APPLIES",
+      "severity": "MEDIUM",
+      "finding_target": "",
+      "rationale": "Exclusion is a policy term, so the finding targets the insurer's payable amount and not the hospital."
+    },
+    {
+      "example_id": "EX-INS-006",
+      "title": "Pre-existing disease look-back - conflict surfaced, not resolved",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "INS-IRDAI-010"
+      ],
+      "scenario": "PED declared during the waiting period with no policy schedule available.",
+      "inputs": {
+        "line": {
+          "description": "Treatment for declared PED",
+          "amount": 60000
+        },
+        "policy_schedule_available": false
+      },
+      "expected_outcome": {
+        "finding": "INSURANCE_REVIEW",
+        "surface_both": {
+          "product_guideline_months": 48,
+          "health_department_faq_months": 36
+        },
+        "must_not": "hard-code a single window"
+      },
+      "expected_finding_code": "INSURANCE_REVIEW_PED_LOOKBACK_CONFLICT",
+      "severity": "LOW",
+      "finding_target": "",
+      "rationale": "IRDAI's own sources conflict on the PED look-back. The database records status UNCERTAIN and refuses to pick a number."
+    },
+    {
+      "example_id": "EX-COMBO-001",
+      "title": "One PM-JAY bill, four independent findings",
+      "bill_date": "2026-08-01",
+      "rule_ids": [
+        "PKG-PMJAY-003",
+        "PKG-PMJAY-004",
+        "PKG-PMJAY-010",
+        "ENG-GST-ARITH-001"
+      ],
+      "scenario": "Empanelled hospital bill with an ICU day misclassification, an excess blood unit, a prohibited patient charge and a total mismatch.",
+      "inputs": {
+        "invoice_total": 128400,
+        "lines_total_plus_tax": 131900,
+        "findings_expected": [
+          "QUANTITY/BED-CATEGORY ANOMALY",
+          "QUANTITY_LIMIT_EXCEEDED",
+          "PROHIBITED PATIENT CHARGE",
+          "INVOICE_TOTAL_MISMATCH"
+        ]
+      },
+      "expected_outcome": {
+        "finding_count": 4,
+        "must_not_collapse_into": "a single blended 'overcharge' number"
+      },
+      "expected_finding_code": "MULTI_FINDING",
+      "severity": "HIGH",
+      "finding_target": "",
+      "rationale": "Demonstrates that the output is a ranked list of separate, attributable findings against named rules, not one aggregated overcharge figure."
+    }
+  ]
+}

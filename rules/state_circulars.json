@@ -1,0 +1,38 @@
+[
+  {
+    "rule_id": "RULE-IND-UNBUNDLE-003",
+    "authority": "STATE_GOVT",
+    "order_number": "CEA/DIR/2020-04/UNBUNDLE",
+    "title": "Prohibition of Administrative Overhead & Waste Surcharges",
+    "category": "Consumables & Overheads",
+    "statutory_cap_rate": 0.0,
+    "is_unbundling_prohibited": true,
+    "effective_date": "2020-05-15",
+    "gazette_citation": "State Healthcare Establishment Guidelines on Overhead Billing Transparency & CEA Directives",
+    "description": "Prohibits hospital establishments from unbundling administrative file opening charges, bio-medical waste disposal, and general disinfection surcharges as separate line items to patients."
+  },
+  {
+    "rule_id": "RULE-IND-PPE-004",
+    "authority": "NPPA",
+    "order_number": "S.O. 1492(E)",
+    "title": "NPPA Statutory Ceiling on Medical Protective Consumables",
+    "category": "Consumables & Overheads",
+    "statutory_cap_rate": 800.0,
+    "is_unbundling_prohibited": false,
+    "effective_date": "2020-05-21",
+    "gazette_citation": "The Gazette of India: Extraordinary, Part II—Sec. 3(ii), Order S.O. 1492(E)",
+    "description": "National Pharmaceutical Pricing Authority notification regulating permissible retail prices and trade margins on PPE kits and related epidemic/inpatient supplies."
+  },
+  {
+    "rule_id": "RULE-IND-GLOVES-005",
+    "authority": "NPPA",
+    "order_number": "DPCO-2013-SEC-08",
+    "title": "Sterile Examination & Surgical Gloves Margin Cap",
+    "category": "Consumables & Overheads",
+    "statutory_cap_rate": 75.0,
+    "is_unbundling_prohibited": false,
+    "effective_date": "2021-07-01",
+    "gazette_citation": "DPCO Order on Monitored Disposables and Drug Delivery Systems",
+    "description": "Restricts unreasonable markups on basic single-use surgical and examination gloves."
+  }
+]

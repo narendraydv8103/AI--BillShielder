@@ -1,0 +1,305 @@
+{
+  "database": "india-hospital-bill-rules",
+  "schema_version": "1.0.0",
+  "as_of": "2026-10-04",
+  "evidence_policy": {
+    "accepted": "Primary legislation, statutory notifications, official government circulars/orders, scheme guidelines, and IRDAI regulations only.",
+    "rejected": "Blogs, commercial rate cards, news articles, hospital websites, insurance aggregator sites, mirrors of notifications, and model prior knowledge.",
+    "no_invention_rule": "If verbatim official text could not be retrieved, the gap is recorded in rules.json.coverage_gaps and no figure is encoded."
+  },
+  "count": 18,
+  "sources": [
+    {
+      "source_id": "SRC-001",
+      "url": "https://cbic-gst.gov.in/hindi/pdf/central-tax-rate/Notification12-CGST.pdf",
+      "publisher": "Central Board of Indirect Taxes and Customs (CBIC) / GST Council",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 4,
+      "cited_by_rule_ids": [
+        "GST-IN-HC-001",
+        "GST-IN-HC-002",
+        "GST-IN-HC-003",
+        "GST-IN-HC-004",
+        "GST-IN-HC-012",
+        "GST-IN-HC-013"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-002",
+      "url": "https://gstcouncil.gov.in/node/4433",
+      "publisher": "Central Board of Indirect Taxes and Customs (CBIC) / GST Council",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "corroborating",
+      "authority_rank": 4,
+      "cited_by_rule_ids": [
+        "GST-IN-HC-001"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-003",
+      "url": "https://cbic-gst.gov.in/pdf/cir-177-08-2022-cgst.pdf",
+      "publisher": "CBIC / GST Council",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "corroborating",
+      "authority_rank": 4,
+      "cited_by_rule_ids": [
+        "GST-IN-HC-002",
+        "GST-IN-HC-011",
+        "GST-IN-HC-014"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-004",
+      "url": "https://gstcouncil.gov.in/sites/default/files/2024-05/download_6_0.pdf",
+      "publisher": "CBIC / GST Council",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "corroborating",
+      "authority_rank": 4,
+      "cited_by_rule_ids": [
+        "GST-IN-HC-003"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-005",
+      "url": "https://cbic-gst.gov.in/hindi/central-tax-rate.html",
+      "publisher": "Ministry of Finance, Department of Revenue (on GST Council recommendation)",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 4,
+      "cited_by_rule_ids": [
+        "GST-IN-HC-005",
+        "GST-IN-HC-006"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-006",
+      "url": "https://cbic-gst.gov.in/pdf/circularno-27-gst.pdf",
+      "publisher": "Central Board of Indirect Taxes and Customs (CBIC)",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 2,
+      "cited_by_rule_ids": [
+        "GST-IN-HC-007"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-007",
+      "url": "https://cbic-gst.gov.in/pdf/circularno-32-cgst.pdf",
+      "publisher": "Central Board of Indirect Taxes and Customs (CBIC)",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 2,
+      "cited_by_rule_ids": [
+        "GST-IN-HC-008",
+        "GST-IN-HC-009",
+        "GST-IN-HC-010"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-008",
+      "url": "https://gstcouncil.gov.in/node/4898",
+      "publisher": "CBIC",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "corroborating",
+      "authority_rank": 2,
+      "cited_by_rule_ids": [
+        "GST-IN-HC-011"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-009",
+      "url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+      "publisher": "National Health Authority (NHA), Ministry of Health and Family Welfare",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "PKG-PMJAY-001",
+        "PKG-PMJAY-002",
+        "PKG-PMJAY-003",
+        "PKG-PMJAY-004",
+        "PKG-PMJAY-005",
+        "PKG-PMJAY-006",
+        "PKG-PMJAY-007",
+        "PKG-PMJAY-008"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-010",
+      "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=1814806",
+      "publisher": "National Health Authority (NHA), Ministry of Health and Family Welfare",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "corroborating",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "PKG-PMJAY-001"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-011",
+      "url": "https://nha.gov.in/strapi/uploads/HBP_2022_14bf060cbb.pdf",
+      "publisher": "National Health Authority",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "PKG-PMJAY-009"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-012",
+      "url": "https://nha.gov.in/strapi/uploads/Operation_Manual_for_AB_PM_JAY_5b8795878a.pdf",
+      "publisher": "National Health Authority",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "PKG-PMJAY-010"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-013",
+      "url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+      "publisher": "Insurance Regulatory and Development Authority of India (IRDAI)",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "INS-IRDAI-001",
+        "INS-IRDAI-002",
+        "INS-IRDAI-003",
+        "INS-IRDAI-004",
+        "INS-IRDAI-005",
+        "INS-IRDAI-007"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-014",
+      "url": "https://irdai.gov.in/documents/37343/365525/Modified+Guidelines+on+Product+filing+in+Health+Insurance+Business-Norms+on.pdf/7b50effc-e553-f0a6-389d-3ca90ab11af5",
+      "publisher": "IRDAI",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "INS-IRDAI-006"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-015",
+      "url": "https://irdai.gov.in/documents/37343/365525/Amendments+in+respect+of+provisions+of+Guidelines+on+Standardization+of+Exc.pdf/fe4822bf-c5eb-de32-d65a-868067bccaab",
+      "publisher": "IRDAI",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "INS-IRDAI-008"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-016",
+      "url": "https://irdai.gov.in/en/document-detail?documentId=4942918",
+      "publisher": "IRDAI",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "INS-IRDAI-009"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-017",
+      "url": "https://irdai.gov.in/documents/37343/365525/Guidelines+on+Standard+Vector+Borne+Disease+Health+Policy.pdf/0b469fe7-0173-de3b-81a8-84991c0c82f6",
+      "publisher": "IRDAI",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "primary",
+      "authority_rank": 3,
+      "cited_by_rule_ids": [
+        "INS-IRDAI-010"
+      ],
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true
+      }
+    },
+    {
+      "source_id": "SRC-018",
+      "url": "https://www.clinicalestablishments.mohfw.gov.in/",
+      "publisher": "Derived control - not a statutory provision",
+      "publisher_type": "OFFICIAL_GOVERNMENT",
+      "role": "corroborating",
+      "authority_rank": 5,
+      "cited_by_rule_ids": [
+        "ENG-EVID-001"
+      ],
+      "verification": {
+        "source_verified": false,
+        "citation_verified": false
+      }
+    }
+  ]
+}

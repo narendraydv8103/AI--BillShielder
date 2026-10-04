@@ -1,0 +1,97 @@
+{
+  "hospital_name": "Apollo Specialty Healthcare India Ltd.",
+  "hospital_city": "Delhi",
+  "bill_number": "DEL-2024-89211",
+  "bill_date": "2024-10-14",
+  "admission_date": "2024-10-08",
+  "discharge_date": "2024-10-12",
+  "patient_name": "Ramesh Kumar Sharma",
+  "patient_uhid": "DLH-9012384",
+  "ward_type": "Super Deluxe / ICU Multi-bed",
+  "items": [
+    {
+      "item_id": "item-1",
+      "item_name": "ICU Bed & Nursing Charges",
+      "category": "Intensive Care",
+      "quantity": 2.0,
+      "unit_rate": 15000.0,
+      "total_charge": 30000.0
+    },
+    {
+      "item_id": "item-2",
+      "item_name": "Room Rent (Private Deluxe)",
+      "category": "Accommodation",
+      "quantity": 2.0,
+      "unit_rate": 9500.0,
+      "total_charge": 19000.0
+    },
+    {
+      "item_id": "item-3",
+      "item_name": "Biomedical Waste Disposal Surcharge",
+      "category": "Overhead Surcharge",
+      "quantity": 4.0,
+      "unit_rate": 850.0,
+      "total_charge": 3400.0
+    },
+    {
+      "item_id": "item-4",
+      "item_name": "PPE Kit - High Risk ICU Care",
+      "category": "Consumables",
+      "quantity": 8.0,
+      "unit_rate": 1800.0,
+      "total_charge": 14400.0
+    },
+    {
+      "item_id": "item-5",
+      "item_name": "Sterile Surgical Gloves 7.5 (Pair)",
+      "category": "Consumables",
+      "quantity": 12.0,
+      "unit_rate": 350.0,
+      "total_charge": 4200.0
+    },
+    {
+      "item_id": "item-6",
+      "item_name": "Infusion Pump Surcharge (Per Day)",
+      "category": "Overhead Surcharge",
+      "quantity": 4.0,
+      "unit_rate": 1200.0,
+      "total_charge": 4800.0
+    },
+    {
+      "item_id": "item-7",
+      "item_name": "Doctor In-Patient Visit (Twice/Day)",
+      "category": "Professional Fees",
+      "quantity": 8.0,
+      "unit_rate": 2500.0,
+      "total_charge": 20000.0
+    },
+    {
+      "item_id": "item-8",
+      "item_name": "Pharmacy: Paracetamol IV 100ml",
+      "category": "Pharmacy",
+      "quantity": 6.0,
+      "unit_rate": 220.0,
+      "total_charge": 1320.0
+    },
+    {
+      "item_id": "item-9",
+      "item_name": "Pharmacy: Ceftriaxone 1g Inj",
+      "category": "Pharmacy",
+      "quantity": 4.0,
+      "unit_rate": 480.0,
+      "total_charge": 1920.0
+    },
+    {
+      "item_id": "item-10",
+      "item_name": "Administrative & Admission File Fee",
+      "category": "Overhead Surcharge",
+      "quantity": 1.0,
+      "unit_rate": 2500.0,
+      "total_charge": 2500.0
+    }
+  ],
+  "subtotal_amount": 101540.0,
+  "discount_amount": 0.0,
+  "tax_amount": 0.0,
+  "total_amount": 101540.0
+}

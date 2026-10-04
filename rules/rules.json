@@ -1,0 +1,2607 @@
+{
+  "database": "india-hospital-bill-rules",
+  "schema_version": "1.0.0",
+  "generated_for": "AI Hospital Bill Auditor (India)",
+  "as_of": "2026-10-04",
+  "notes": [
+    "All rules are NORMALIZED operational rules. Each carries a link to the official government source.",
+    "GST thresholds are TAX TREATMENT triggers, NOT maximum prices.",
+    "price_control.who_is_bound is mandatory: a reimbursement rate is never silently converted into a legal cap on what a hospital may charge.",
+    "Evaluation must be date-aware: filter rules where effective_from <= bill_date < effective_until."
+  ],
+  "rules": [
+
+    {
+      "rule_id": "GST-IN-HC-001",
+      "category": "GST_RULE",
+      "subject": "Core exemption - healthcare services by a clinical establishment",
+      "item_or_service": "Healthcare services supplied by a clinical establishment / authorised medical practitioner / para-medics",
+      "item_classification": "SAC 9993 (heading 9993); commonly invoiced as 999311",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": "supply qualifies as 'health care services' per para 2(zg) and supplier is a 'clinical establishment' per para 2(s)"
+      },
+      "rule_type": "EXEMPTION",
+      "rule_statement": "Health care services provided by a clinical establishment, an authorised medical practitioner or para-medics are exempt from CGST.",
+      "operational_rule": "IF supplier is a clinical establishment (hospital/nursing home/clinic/sanatorium) AND the bill line is a service of diagnosis, treatment or care for illness, injury, deformity, abnormality or pregnancy THEN GST = NIL (0%). This covers room charges, nursing, ICU/CCU/ICCU/NICU, consultation, diagnostics performed by the hospital, and the entire amount retained by the hospital - UNLESS a more specific rule in this database overrides it (see GST-IN-HC-005 for room rent above INR 5,000/day, and GST-IN-HC-014 for cosmetic/hair-transplant).",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": 0, "currency": "INR", "unit": "GST_RATE_PERCENT" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": [
+          "Supplier is a clinical establishment within the meaning of para 2(s)",
+          "Supply is a health care service within the meaning of para 2(zg)",
+          "No specific carve-out applies (see GST-IN-HC-005, GST-IN-HC-014)"
+        ]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "GST exemption. This rule places NO ceiling on the hospital's charge. A hospital may charge any price for an exempt healthcare service; GST exemption only means no tax is added."
+      },
+      "included_items": [],
+      "excluded_items": [
+        "Hair transplant services",
+        "Cosmetic or plastic surgery, except when undertaken to restore or reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma"
+      ],
+      "exceptions": [
+        "Room charges exceeding INR 5,000 per day for rooms OTHER THAN ICU/CCU/ICCU/NICU - see GST-IN-HC-005"
+      ],
+      "conditions": [
+        "Intra-State supply: Notification 12/2017-CT(R), Sl. No. 74",
+        "Inter-State supply: the corresponding entry in Notification 02/2017-IGST(R)"
+      ],
+      "effective_from": "2017-07-01",
+      "effective_until": "",
+      "authority": "Central Board of Indirect Taxes and Customs (CBIC) / GST Council",
+      "document_title": "Notification No. 12/2017-Central Tax (Rate) - Exemption on supply of services",
+      "document_type": "EXEMPTION_NOTIFICATION",
+      "document_number": "12/2017-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "12/2017-Central Tax (Rate) dated 28.06.2017",
+        "entry": "Sl. No. 74, Heading 9993, clause (a)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/hindi/pdf/central-tax-rate/Notification12-CGST.pdf",
+        "page": "",
+        "section": "Table, Sl. No. 74",
+        "paragraph": "",
+        "exact_source_text": "74 Heading 9993 Services by way of-(a) health care services by a clinical establishment, an authorised medical practitioner or para-medics; (b) services provided by way of transportation of a patient in an ambulance, other than those specified in (a) above.",
+        "corroborating_official_url": "https://gstcouncil.gov.in/node/4433",
+        "corroborating_text": "12/2017- Central Tax (Rate) | To notify the exemptions on supply of services under CGST Act"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-002",
+      "category": "GST_RULE",
+      "subject": "Scope test - definition of 'health care services'",
+      "item_or_service": "Definition used to decide whether any given bill line is an exempt healthcare service",
+      "item_classification": "",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "SCOPE_DEFINITION",
+      "rule_statement": "'Health care services' means any service by way of diagnosis or treatment or care for illness, injury, deformity, abnormality or pregnancy in any recognised system of medicines in India and includes services by way of transportation of the patient to and from a clinical establishment, but does not include hair transplant or cosmetic or plastic surgery, except when undertaken to restore or to reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma.",
+      "operational_rule": "STEP 1 of every GST check on a hospital bill. Classify each bill line: (a) diagnosis / treatment / care for illness, injury, deformity, abnormality or pregnancy -> in scope of the exemption; (b) transportation to/from the clinical establishment -> in scope; (c) hair transplant -> OUT of scope; (d) cosmetic or plastic surgery -> OUT of scope UNLESS reconstructive (congenital defect, developmental abnormality, injury or trauma). If OUT of scope, do NOT apply GST-IN-HC-001; escalate per GST-IN-HC-014.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": {
+        "taxability": "UNKNOWN",
+        "rate": "",
+        "cgst": "",
+        "sgst": "",
+        "igst": "",
+        "conditions": ["Used as an input predicate for GST-IN-HC-001 and GST-IN-HC-014"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Definitional. No price or tax effect on its own."
+      },
+      "included_items": [
+        "Diagnosis",
+        "Treatment",
+        "Care for illness, injury, deformity, abnormality or pregnancy",
+        "Transportation of the patient to and from the clinical establishment",
+        "Reconstructive cosmetic/plastic surgery for congenital defects, developmental abnormalities, injury or trauma"
+      ],
+      "excluded_items": [
+        "Hair transplant (unconditionally)",
+        "Cosmetic or plastic surgery not undertaken to restore or reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma"
+      ],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2017-07-01",
+      "effective_until": "",
+      "authority": "CBIC / GST Council",
+      "document_title": "Notification No. 12/2017-Central Tax (Rate)",
+      "document_type": "EXEMPTION_NOTIFICATION",
+      "document_number": "12/2017-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "12/2017-CT(R) dated 28.06.2017",
+        "entry": "para 2(zg)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/hindi/pdf/central-tax-rate/Notification12-CGST.pdf",
+        "page": "",
+        "section": "para 2(zg)",
+        "paragraph": "",
+        "exact_source_text": "(zg) \u201chealth care services\u201d means any service by way of diagnosis or treatment or care for illness, injury, deformity, abnormality or pregnancy in any recognised system of medicines in India and includes services by way of transportation of the patient to and from a clinical establishment, but does not include hair transplant or cosmetic or plastic surgery, except when undertaken to restore or to reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma;",
+        "corroborating_official_url": "https://cbic-gst.gov.in/pdf/cir-177-08-2022-cgst.pdf",
+        "corroborating_text": "13.3 Health care services is defined vide 2(zg) of the notification No. 12/2017- Central Tax (Rate) dated 28.06. 2017 as - \u201chealth care services\u201d means any service by way of diagnosis or treatment or care for illness, injury, deformity, abnormality or pregnancy in any recognised system of medicines in India and includes services by way of transportation of the patient to and from a clinical establishment, but does not include hair transplant or cosmetic or plastic surgery, except when undertaken to restore or to reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma.\u201d"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-003",
+      "category": "GST_RULE",
+      "subject": "Scope test - definition of 'clinical establishment'",
+      "item_or_service": "Definition determining whether the hospital is the kind of supplier eligible for the exemption",
+      "item_classification": "",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "SCOPE_DEFINITION",
+      "rule_statement": "'Clinical establishment' means a hospital, nursing home, clinic, sanatorium or any other institution by whatever name called, that offers services or facilities requiring diagnosis or treatment or care for illness, injury, deformity, abnormality or pregnancy in any recognised system of medicines in India, or a place established as an independent entity or a part of an establishment to carry out diagnostic or investigative services of diseases.",
+      "operational_rule": "IF the supplier is registered and described on the bill as a hospital / nursing home / clinic / sanatorium / diagnostic laboratory, treat it as a clinical establishment and apply GST-IN-HC-001. IMPORTANT: a standalone pathology laboratory or imaging centre is ALSO within this definition ('a place established as an independent entity ... to carry out diagnostic or investigative services of diseases'), so diagnostic services supplied by such a lab to a patient are exempt healthcare services. A vendor that merely sells goods (pharmacy, medical store) is NOT a clinical establishment for this purpose.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": {
+        "taxability": "UNKNOWN",
+        "rate": "",
+        "cgst": "",
+        "sgst": "",
+        "igst": "",
+        "conditions": ["Input predicate for GST-IN-HC-001"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Definitional."
+      },
+      "included_items": [
+        "Hospital",
+        "Nursing home",
+        "Clinic",
+        "Sanatorium",
+        "Any other institution by whatever name called offering diagnosis/treatment/care",
+        "Independent diagnostic or investigative laboratory"
+      ],
+      "excluded_items": [
+        "Pharmacy / medical store supplying only goods",
+        "Standalone vendor supplying non-healthcare services"
+      ],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2017-07-01",
+      "effective_until": "",
+      "authority": "CBIC / GST Council",
+      "document_title": "Notification No. 12/2017-Central Tax (Rate)",
+      "document_type": "EXEMPTION_NOTIFICATION",
+      "document_number": "12/2017-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "12/2017-CT(R) dated 28.06.2017",
+        "entry": "para 2(s)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/hindi/pdf/central-tax-rate/Notification12-CGST.pdf",
+        "page": "",
+        "section": "para 2(s)",
+        "paragraph": "",
+        "exact_source_text": "(s) \u201cclinical establishment\u201d means a hospital, nursing home, clinic, sanatorium or any other institution by, whatever name called, that offers services or facilities requiring diagnosis or treatment or care for illness, injury, deformity, abnormality or pregnancy in any recognised system of medicines in India, or a place established as an independent entity or a part of an establishment to carry out diagnostic or investigative services of diseases;",
+        "corroborating_official_url": "https://gstcouncil.gov.in/sites/default/files/2024-05/download_6_0.pdf",
+        "corroborating_text": "same definition reproduced in the consolidated exemption notification"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-004",
+      "category": "GST_RULE",
+      "subject": "Exemption - patient transportation in an ambulance",
+      "item_or_service": "Transportation of a patient in an ambulance",
+      "item_classification": "SAC 9993",
+      "applies_to": {
+        "provider_type": "any transport supplier (incl. ambulance operator)",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "EXEMPTION",
+      "rule_statement": "Services provided by way of transportation of a patient in an ambulance are exempt from CGST.",
+      "operational_rule": "IF a bill line is patient transportation by ambulance (emergency or non-emergency, paid or provided) THEN GST = NIL (0%). Separately, the ambulance itself is treated as a GOODS supply by the ambulance supplier and the ambulance vehicle rate is a separate question from the ambulance SERVICE.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": 0, "currency": "INR", "unit": "GST_RATE_PERCENT" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": ["Supply must be transportation of a patient, not a general transport service"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "GST exemption only. No ceiling on the ambulance charge."
+      },
+      "included_items": [],
+      "excluded_items": ["Ambulance vehicle sale or hire as a goods supply - separate classification"],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2017-07-01",
+      "effective_until": "",
+      "authority": "CBIC / GST Council",
+      "document_title": "Notification No. 12/2017-Central Tax (Rate)",
+      "document_type": "EXEMPTION_NOTIFICATION",
+      "document_number": "12/2017-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "12/2017-CT(R) dated 28.06.2017",
+        "entry": "Sl. No. 74, clause (b)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/hindi/pdf/central-tax-rate/Notification12-CGST.pdf",
+        "page": "",
+        "section": "Table, Sl. No. 74",
+        "paragraph": "",
+        "exact_source_text": "(b) services provided by way of transportation of a patient in an ambulance, other than those specified in (a) above.",
+        "corroborating_official_url": "",
+        "corroborating_text": ""
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-005",
+      "category": "GST_RULE",
+      "subject": "THRESHOLD RULE - hospital room charges above INR 5,000 per day (non-ICU) fall out of the healthcare exemption",
+      "item_or_service": "Hospital room charges, EXCLUDING ICU / CCU / ICCU / NICU",
+      "item_classification": "Heading 9993 as amended by proviso; taxed under the applicable rate entry for heading 9993",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "inpatient receiving healthcare services",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "CONDITIONAL_EXEMPTION_WITH_THRESHOLD",
+      "rule_statement": "The healthcare-services exemption does NOT apply to a room supplied by a clinical establishment, other than an ICU / CCU / ICCU / NICU, where the room charges exceed INR 5,000 per day, to a person receiving healthcare services.",
+      "operational_rule": "COMPUTE room_charge_per_day = total_room_charge_for_the_admission / number_of_chargeable_days (or use the invoice's daily room rate where stated). IF room category is NOT ICU/CCU/ICCU/NICU AND room_charge_per_day > INR 5000 THEN the exemption in Sl. No. 74 does NOT apply to that room supply and GST becomes payable on the taxable value of that room supply at the rate applicable to heading 9993 as in force on the invoice date (determine from the rate notification in force on that date - DO NOT assume a rate). IF room_charge_per_day <= INR 5000 THEN the room charge remains part of the exempt healthcare service (GST = Nil). CRITICAL: this is a TAX TREATMENT threshold, not a price cap. A hospital is NOT prohibited from charging more than INR 5,000/day; charging more simply moves that room supply out of the exemption.",
+      "threshold": { "operator": ">", "value": "5000", "unit": "INR_PER_DAY_PER_PATIENT" },
+      "amount": { "value": "5000", "currency": "INR", "unit": "INR_PER_DAY_PER_PATIENT" },
+      "gst": {
+        "taxability": "TAXABLE",
+        "rate": "REFER_TO_RATE_NOTIFICATION_IN_FORCE_ON_INVOICE_DATE",
+        "cgst": "REFER_TO_RATE_NOTIFICATION",
+        "sgst": "REFER_TO_RATE_NOTIFICATION",
+        "igst": "REFER_TO_RATE_NOTIFICATION",
+        "conditions": [
+          "Supplier is a clinical establishment",
+          "Room is NOT ICU / CCU / ICCU / NICU",
+          "Room charges exceed INR 5,000 per day",
+          "Recipient is a person receiving healthcare services"
+        ]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "NO PRICE CONTROL WHATSOEVER. This INR 5,000 figure is purely a GST taxability threshold. It does NOT mean a hospital may not charge more than INR 5,000/day for a room. Do not report this as a price violation."
+      },
+      "included_items": [],
+      "excluded_items": ["ICU", "CCU", "ICCU", "NICU", "Neo-natal Intensive Care Unit"],
+      "exceptions": [
+        "Room charges at or below INR 5,000 per day remain exempt (this side of the threshold is governed by GST-IN-HC-001)"
+      ],
+      "conditions": [
+        "Applies from 13.07.2022 (date of the amending notification)",
+        "Before 13.07.2022, hospital room rent was fully exempt - see GST-IN-HC-006"
+      ],
+      "effective_from": "2022-07-13",
+      "effective_until": "",
+      "authority": "Ministry of Finance, Department of Revenue (on GST Council recommendation)",
+      "document_title": "Notification No. 07/2022-Central Tax (Rate) dated 13.07.2022 (amending Notification No. 02/2017-Central Tax (Rate), G.S.R. 674(E))",
+      "document_type": "AMENDING_NOTIFICATION",
+      "document_number": "07/2022-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "07/2022-CT(R) dated 13.07.2022",
+        "entry": "Sl. No. 74, clause (a), proviso (3)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/hindi/central-tax-rate.html",
+        "page": "",
+        "section": "Central Tax (Rate) Notifications, year 2022, row '07/2022-Central Tax (Rate), dt. 13-07-2022'",
+        "paragraph": "",
+        "exact_source_text": "07/2022-Central Tax (Rate), dt. 13-07-2022 - Seeks to amend notification No. 2/2017- Central Tax (Rate)",
+        "proviso_text": "\u201cProvided that nothing in this entry shall apply to the services provided by a clinical establishment by way of providing room [other than Intensive Care Unit (ICU)/Critical Care Unit (CCU)/Intensive Cardiac Care Unit (ICCU)/Neo natal Intensive Care Unit (NICU)] having room charges exceeding Rs. 5000 per day to a person receiving health care services.\u201d",
+        "notification_cross_confirmed_at": "https://gstcouncil.gov.in/sites/default/files/2024-05/13_2022-ctr-eng.pdf",
+        "notification_cross_confirmed_text": "Note: - The principal notification No.2/2017- Central Tax (Rate), dated the 28 June, 2017 was published in the Gazette of India, Extraordinary, Part II, Section 3, Sub-section (i), vide number G.S.R. 674(E)., dated the 28 June, 2017 and was last amended by notification No. 07/2022 \u2013 Central Tax (Rate), dated the 13th July, 2022, published in the Gazette of India, Extraordinary, Part II, Section 3, Sub-section (i), vide number G.S.R. 553(E), dated the 13th July, 2022.",
+        "verification_notes": "Number, date, gazette reference (G.S.R. 553(E)) and amendment target are confirmed from CBIC's own notification index and from the note in the official GST Council copy of Notification 13/2022-CT(R). Re-open the official CBIC PDF of 07/2022-CT(R) before quoting the proviso verbatim in a production audit report."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-006",
+      "category": "GST_RULE",
+      "subject": "ICU / CCU / ICCU / NICU charges are outside the INR 5,000 room-charge carve-out",
+      "item_or_service": "Intensive Care Unit, Critical Care Unit, Intensive Cardiac Care Unit, Neo-natal Intensive Care Unit charges",
+      "item_classification": "SAC 9993 - exempt healthcare service",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "inpatient",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "EXEMPTION",
+      "rule_statement": "ICU, CCU, ICCU and NICU room charges are carved OUT of the INR 5,000-per-day carve-out in Sl. No. 74, so they continue to be covered by the healthcare services exemption irrespective of the per-day amount charged.",
+      "operational_rule": "IF the room charge line is for ICU / CCU / ICCU / NICU THEN do NOT apply GST-IN-HC-005, regardless of the per-day amount. GST = NIL (0%) for that line. HIGH-VALUE FLAG: this exemption holds even at ICU charges far above INR 5,000/day - a bill with INR 20,000/day ICU charges and nil GST on the ICU line is CORRECT, not an under-taxation finding.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": ["Room category is ICU / CCU / ICCU / NICU"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Tax treatment only. No price implication whatsoever."
+      },
+      "included_items": ["ICU", "CCU", "ICCU", "NICU"],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2022-07-13",
+      "effective_until": "",
+      "authority": "Ministry of Finance / GST Council",
+      "document_title": "Notification No. 07/2022-Central Tax (Rate) dated 13.07.2022",
+      "document_type": "AMENDING_NOTIFICATION",
+      "document_number": "07/2022-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "07/2022-CT(R) dated 13.07.2022",
+        "entry": "Sl. No. 74, clause (a), proviso (3)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/hindi/central-tax-rate.html",
+        "page": "",
+        "section": "2022 notification index",
+        "paragraph": "",
+        "exact_source_text": "07/2022-Central Tax (Rate), dt. 13-07-2022 - Seeks to amend notification No. 2/2017- Central Tax (Rate)",
+        "proviso_text": "\u201c...providing room [other than Intensive Care Unit (ICU)/Critical Care Unit (CCU)/Intensive Cardiac Care Unit (ICCU)/Neo natal Intensive Care Unit (NICU)] having room charges exceeding Rs. 5000 per day...\u201d",
+        "verification_notes": "Derived directly from the bracketed carve-out in the proviso of Sl. No. 74 as inserted by 07/2022-CT(R)."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-007",
+      "category": "GST_RULE",
+      "subject": "HISTORICAL - hospital room rent fully exempt (before 13.07.2022)",
+      "item_or_service": "Hospital room rent, all categories, all per-day amounts",
+      "item_classification": "SAC 9993 - exempt",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "inpatient",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "EXEMPTION",
+      "rule_statement": "CBIC confirmed that rent on rooms provided to in-patients is exempt. This was the position for bills dated before the INR 5,000 threshold was introduced on 13.07.2022.",
+      "operational_rule": "IF bill_date < 2022-07-13 THEN hospital room rent (any amount, any category including ICU) is EXEMPT and GST = Nil. Do NOT apply GST-IN-HC-005 to a pre-13.07.2022 bill. THIS IS THE KEY VERSIONING RULE: a hospital charging INR 15,000/day in 2021 with nil GST is CORRECT; the identical charge in 2024 is a potential GST error.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": ["bill_date strictly before 2022-07-13"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Historical tax treatment. Never applicable to a post-13.07.2022 room charge."
+      },
+      "included_items": ["All room rent to in-patients, any category, any amount"],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2017-07-01",
+      "effective_until": "2022-07-12",
+      "authority": "Central Board of Indirect Taxes and Customs (CBIC)",
+      "document_title": "Circular No. 2/12/2018-GST - Clarification on certain issues relating to levy of GST on supply of services",
+      "document_type": "CIRCULAR",
+      "document_number": "Circular No. 2/12/2018-GST",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "",
+        "circular": "Circular No. 2/12/2018-GST",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/pdf/circularno-27-gst.pdf",
+        "page": "",
+        "section": "Question 2 (room rent on rooms provided to in-patients)",
+        "paragraph": "",
+        "exact_source_text": "1. Whether for the purpose of entries at Sl. Nos. 34(ii) [admission to cinema] and 7(ii)(vi)(viii) [Accommodation in hotels, inns, etc.], of notification 11/2017-CT (Rate) dated 28th June 2017, price/ declared tariff includes the tax component or not? 2. Whether rent on rooms provided to in-patients is exempted? If liable to tax, please mention the entry of CGST Notification 11/2017-CT(Rate) 3. What will be the rate of tax for bakery items supplied where eating place is attached - manufacturer for the purpose of composition levy?\n\n1. Price/ declared tariff does not include taxes. 2. Room rent in hospitals is exempt. 3. Any service by way of serving of food or drinks including by a bakery qualifies under section 10 (1) (b) of CGST Act and hence GST rate of composition levy for the same would be 5%.",
+        "verification_notes": "The CBIC PDF index for this circular is circularno-27-gst.pdf; the circular number is rendered as 2/12/2018-GST in the CBIC circular index. Confirm the circular number against the CBIC circular index before printing it on an audit report."
+      },
+      "status": "SUPERSEDED",
+      "superseded_by": "GST-IN-HC-005",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": false,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-008",
+      "category": "GST_RULE",
+      "subject": "Doctors / consultants / technicians engaged by a hospital - entire patient charge is exempt",
+      "item_or_service": "Consultation and professional services of doctors, consultants and technicians engaged by the hospital, including amounts retained by the hospital",
+      "item_classification": "SAC 9993 - exempt",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "EXEMPTION",
+      "rule_statement": "Services provided by senior doctors / consultants / technicians hired by hospitals, whether employees or not, are healthcare services which are exempt. The entire amount charged by the hospital from the patient, including retention money held back for ancillary services, is exempt.",
+      "operational_rule": "IF a bill line is a doctor's / consultant's / technician's professional fee billed THROUGH the hospital to the patient THEN GST = Nil. IF the hospital charges the patient a gross amount and pays the consultant less (retention), the FULL amount charged to the patient is exempt - do not tax the retained portion. FLAG: a separate line item reading 'consultancy fee payable to external doctor', 'professional fee to visiting consultant', or 'doctor retention' billed to the patient should be challenged as a possible non-exempt pass-through, because only services supplied by the clinical establishment to the patient are exempt.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": 0, "currency": "INR", "unit": "GST_RATE_PERCENT" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": ["Supply is by the clinical establishment to the patient"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Tax treatment only."
+      },
+      "included_items": ["Senior doctors", "Consultants", "Technicians", "Retention money retained by the hospital"],
+      "excluded_items": ["A supply of doctors' services BY the doctor TO the hospital (different supplier - see conditions)"],
+      "exceptions": [],
+      "conditions": [
+        "Supplier to the patient must be the clinical establishment. A doctor billing the patient directly is a separate supplier who is himself an authorised medical practitioner and is also exempt under Sl. No. 74(a)."
+      ],
+      "effective_from": "2018-02-12",
+      "effective_until": "",
+      "authority": "Central Board of Indirect Taxes and Customs (CBIC)",
+      "document_title": "Circular No. 32/06/2018-GST - Clarification on certain issues relating to levy of GST on supply of services",
+      "document_type": "CIRCULAR",
+      "document_number": "Circular No. 32/06/2018-GST",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "",
+        "rule": "",
+        "notification": "12/2017-CT(R)",
+        "entry": "Sl. No. 74",
+        "circular": "Circular No. 32/06/2018-GST",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/pdf/circularno-32-cgst.pdf",
+        "page": "",
+        "section": "Question 5",
+        "paragraph": "",
+        "exact_source_text": "Health care services provided by a clinical establishment, an authorised medical practitioner or para-medics are exempt. [Sl. No. 74 of notification No. 12/2017-CT(Rate) dated 28.06.2017 as amended refers]. (1) Services provided by senior doctors/ consultants/ technicians hired by the hospitals, whether employees or not, are healthcare services which are exempt. (2) Healthcare services have been defined to mean any service by way of diagnosis or treatment or care for illness, injury, deformity, abnormality or pregnancy in any recognised system of medicines in India[para 2(zg) of notification No. 12/2017-CT(Rate)]. Therefore, hospitals also provide healthcare services. The entire amount charged by them from the patients including the retention",
+        "verification_notes": "See also Q3 of the same circular for the retention/ancillary-services clarification."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-009",
+      "category": "GST_RULE",
+      "subject": "In-patient food prescribed by a doctor is part of the composite healthcare supply",
+      "item_or_service": "Diet / food supplied to admitted in-patients",
+      "item_classification": "Composite supply of healthcare - not separately taxable",
+      "applies_to": {
+        "provider_type": "clinical_establishment (own canteen)",
+        "patient_type": "inpatient",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": "food supplied as advised by the doctor / nutritionist to admitted patients"
+      },
+      "rule_type": "COMPOSITE_SUPPLY",
+      "rule_statement": "Food supplied to the in-patients as advised by the doctor / nutritionists is a part of the composite supply of healthcare and is not separately taxable.",
+      "operational_rule": "IF a bill line is 'diet', 'patient diet', 'food charges', 'dietary charges' for an ADMITTED inpatient and the supply is by the hospital's own canteen THEN the line is part of the exempt composite healthcare supply -> GST = Nil. CRITICAL AUDIT NOTE: a separate 'diet charges' / 'food charges' line on a hospital bill is nonetheless a strong PACKAGE-DUPLICATION signal if the treatment was booked under an all-inclusive package - see PKG-PMJAY-005 and INS-IRDAI-001.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": 0, "currency": "INR", "unit": "GST_RATE_PERCENT" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": [
+          "Patient is admitted (in-patient)",
+          "Supply is by the hospital's own canteen",
+          "Food is advised by the doctor / nutritionist"
+        ]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Tax treatment only."
+      },
+      "included_items": ["Dietary charges for in-patients"],
+      "excluded_items": ["Food to out-patients", "Food to attendants or visitors", "Food supplied by an outsourced caterer - see GST-IN-HC-010"],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2018-02-12",
+      "effective_until": "",
+      "authority": "CBIC",
+      "document_title": "Circular No. 32/06/2018-GST",
+      "document_type": "CIRCULAR",
+      "document_number": "Circular No. 32/06/2018-GST",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "2(2)(c) composite supply",
+        "rule": "",
+        "notification": "12/2017-CT(R)",
+        "entry": "Sl. No. 74",
+        "circular": "Circular No. 32/06/2018-GST",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/pdf/circularno-32-cgst.pdf",
+        "page": "",
+        "section": "Question 5(3)",
+        "paragraph": "",
+        "exact_source_text": "(3) Food supplied to the in-patients as advised by the doctor/nutritionists is a part of composite supply of healthcare and not separately taxable. Other supplies of food by a hospital to patients (not admitted) or their attendants or visitors are taxable.",
+        "verification_notes": ""
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-010",
+      "category": "GST_RULE",
+      "subject": "Taxable food - out-patients, attendants, visitors, and outsourced catering",
+      "item_or_service": "Food supplied to non-admitted patients, attendants or visitors; food/catering supplied by an outsourced caterer",
+      "item_classification": "Supply of food or drink - NOT exempt healthcare service",
+      "applies_to": {
+        "provider_type": "clinical_establishment (own canteen) or outsourced caterer",
+        "patient_type": "out-patient / attendant / visitor",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "TAXABILITY",
+      "rule_statement": "Other supplies of food by a hospital to patients (not admitted) or to their attendants or visitors are taxable. Where food is outsourced by the hospital to an outdoor caterer, the caterer must charge tax as applicable and the hospital gets no input tax credit.",
+      "operational_rule": "IF a 'food / canteen / beverage / tea / coffee / meals' line relates to an OUT-PATIENT, an ATTENDANT or a VISITOR THEN the supply is outside the healthcare exemption and GST is payable at the applicable rate for the food service as in force on the invoice date (determine from the rate notification; do not assume). IF the food is supplied by an OUTSOURCED caterer, the CATERER (a different supplier) must charge GST and the hospital is the recipient - flag a bill where the hospital itself raises a nil-GST 'caterer charges' line against an outsourced caterer invoice.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": {
+        "taxability": "TAXABLE",
+        "rate": "REFER_TO_RATE_NOTIFICATION_IN_FORCE_ON_INVOICE_DATE",
+        "cgst": "REFER_TO_RATE_NOTIFICATION",
+        "sgst": "REFER_TO_RATE_NOTIFICATION",
+        "igst": "REFER_TO_RATE_NOTIFICATION",
+        "conditions": ["Recipient is not an admitted in-patient", "OR the supplier is an outsourced caterer rather than the hospital"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Tax treatment only."
+      },
+      "included_items": ["Canteen charges to out-patients", "Food to attendants", "Food to visitors", "Outsourced catering charges"],
+      "excluded_items": ["Diet to admitted in-patients supplied by the hospital's own canteen"],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2018-02-12",
+      "effective_until": "",
+      "authority": "CBIC",
+      "document_title": "Circular No. 32/06/2018-GST",
+      "document_type": "CIRCULAR",
+      "document_number": "Circular No. 32/06/2018-GST",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "",
+        "circular": "Circular No. 32/06/2018-GST",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/pdf/circularno-32-cgst.pdf",
+        "page": "",
+        "section": "Question 5(3)",
+        "paragraph": "",
+        "exact_source_text": "Other supplies of food by a hospital to patients (not admitted) or their attendants or visitors are taxable.",
+        "corroborating_text": "(3) Food supplied to the patients: Health care services provided by the clinical establishments will include food supplied to the patients; but such food may be prepared by the canteens run by the hospitals or may be outsourced by the Hospitals from outdoor caterers. When outsourced, there should be no ambiguity that the suppliers shall charge tax as applicable and hospital will get no ITC.",
+        "verification_notes": "Consistent with the AAR line of authority that an outsourced caterer supplying to a hospital is a standalone taxable supply in the caterer's hands (recipient of supply = the hospital, not the patient)."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-011",
+      "category": "GST_RULE",
+      "subject": "IVF and assisted reproductive technology treated as healthcare services",
+      "item_or_service": "IVF / ART procedures",
+      "item_classification": "SAC 9993 - exempt healthcare service",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "EXEMPTION",
+      "rule_statement": "IVF services are covered under the definition of health care services for the purpose of the exemption notification.",
+      "operational_rule": "IF a bill line is IVF, IUI, ICSI or other assisted reproductive technology treatment supplied BY a clinical establishment THEN GST = Nil (0%). NOTE THE SCHEME/INSURER SPLIT: the GST exemption does NOT make the procedure payable under a health policy or scheme - infertility procedures are excluded under AB PM-JAY Annexure 6 (see PKG-PMJAY-006). A line can be correctly GST-exempt and correctly insurance-non-payable at the same time.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": 0, "currency": "INR", "unit": "GST_RATE_PERCENT" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": ["Supplier is a clinical establishment or authorised medical practitioner"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Tax treatment only."
+      },
+      "included_items": ["IVF", "IUI", "Assisted reproductive technology procedures"],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2022-08-03",
+      "effective_until": "",
+      "authority": "CBIC",
+      "document_title": "Circular No. 177/09/2022-GST - Clarifications regarding applicable GST rates & exemptions on certain services",
+      "document_type": "CIRCULAR",
+      "document_number": "Circular No. 177/09/2022-GST",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "",
+        "rule": "",
+        "notification": "12/2017-CT(R)",
+        "entry": "Sl. No. 74; para 2(zg)",
+        "circular": "Circular No. 177/09/2022-GST",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/pdf/cir-177-08-2022-cgst.pdf",
+        "page": "",
+        "section": "Para 13.4",
+        "paragraph": "13.4",
+        "exact_source_text": "13.4 The abnormality/disease/ailment of infertility is treated using ART procedure such as IVF. It is clarified that services by way of IVF are also covered under the definition of health care services for the purpose of above exemption notification.",
+        "corroborating_official_url": "https://gstcouncil.gov.in/node/4898",
+        "corroborating_text": "177/09/2022-GST | Clarifications regarding applicable GST rates & exemptions on certain services"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-012",
+      "category": "GST_RULE",
+      "subject": "Exemption - common bio-medical waste treatment facility services to a clinical establishment",
+      "item_or_service": "Treatment or disposal of bio-medical waste by a common bio-medical waste treatment facility operator",
+      "item_classification": "SAC 9994",
+      "applies_to": {
+        "provider_type": "common bio-medical waste treatment facility operator",
+        "patient_type": "n/a",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "EXEMPTION",
+      "rule_statement": "Services provided by operators of the common bio-medical waste treatment facility to a clinical establishment by way of treatment or disposal of bio-medical waste or the processes incidental thereto are exempt.",
+      "operational_rule": "IF a bill line is bio-medical waste collection / treatment / disposal charges levied BY a common bio-medical waste treatment facility operator ON a clinical establishment THEN GST = Nil. This is a B2B supply (hospital -> operator is the reverse direction), so do not confuse it with a patient-facing bill line.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": 0, "currency": "INR", "unit": "GST_RATE_PERCENT" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": ["Supplier is a common bio-medical waste treatment facility operator", "Recipient is a clinical establishment"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Tax treatment only."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2017-07-01",
+      "effective_until": "",
+      "authority": "CBIC / GST Council",
+      "document_title": "Notification No. 12/2017-Central Tax (Rate)",
+      "document_type": "EXEMPTION_NOTIFICATION",
+      "document_number": "12/2017-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "12/2017-CT(R)",
+        "entry": "Sl. No. 75, Heading 9994",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/hindi/pdf/central-tax-rate/Notification12-CGST.pdf",
+        "page": "",
+        "section": "Table, Sl. No. 75",
+        "paragraph": "",
+        "exact_source_text": "75 Heading 9994 Services provided by operators of the common bio-medical waste treatment facility to a clinical establishment by way of treatment or disposal of bio-medical waste or the processes incidental thereto.",
+        "verification_notes": ""
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-013",
+      "category": "GST_RULE",
+      "subject": "Exemption - public conveniences provided by a clinical establishment",
+      "item_or_service": "Provision of bathroom, washrooms, lavatories, urinals or toilets",
+      "item_classification": "SAC 9994",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "EXEMPTION",
+      "rule_statement": "Services by way of public conveniences such as provision of facilities of bathroom, washrooms, lavatories, urinal or toilets are exempt where supplied by a clinical establishment in connection with its healthcare services.",
+      "operational_rule": "IF a bill line is 'toilet charges', 'washroom charges', 'bathroom facility charges', 'urinal charges' on a hospital bill THEN GST = Nil. AUDIT NOTE: a charge for 'toilet charges' or 'washroom charges' to an in-patient is also a classic SUBSUMED / NON-PAYABLE item under the IRDAI standardization lists - see INS-IRDAI-002 (List I) and INS-IRDAI-001 (List II).",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": 0, "currency": "INR", "unit": "GST_RATE_PERCENT" },
+      "gst": {
+        "taxability": "EXEMPT",
+        "rate": "0%",
+        "cgst": "Nil",
+        "sgst": "Nil",
+        "igst": "Nil",
+        "conditions": ["Supplied by a clinical establishment in connection with healthcare services"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Tax treatment only."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2017-07-01",
+      "effective_until": "",
+      "authority": "CBIC / GST Council",
+      "document_title": "Notification No. 12/2017-Central Tax (Rate)",
+      "document_type": "EXEMPTION_NOTIFICATION",
+      "document_number": "12/2017-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "12/2017-CT(R)",
+        "entry": "Sl. No. 76, Heading 9994",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/hindi/pdf/central-tax-rate/Notification12-CGST.pdf",
+        "page": "",
+        "section": "Table, Sl. No. 76",
+        "paragraph": "",
+        "exact_source_text": "76 Heading 9994 Services by way of public conveniences such as provision of facilities of bathroom, washrooms, lavatories, urinal or toilets.",
+        "verification_notes": ""
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "GST-IN-HC-014",
+      "category": "GST_RULE",
+      "subject": "Hair transplant and non-reconstructive cosmetic surgery fall OUTSIDE the healthcare exemption",
+      "item_or_service": "Hair transplant; cosmetic or plastic surgery not for reconstruction",
+      "item_classification": "Outside SAC 9993 healthcare exemption - rate to be determined from the applicable rate entry in force",
+      "applies_to": {
+        "provider_type": "clinical_establishment",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": "NOT undertaken to restore or reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma"
+      },
+      "rule_type": "TAXABILITY",
+      "rule_statement": "'Health care services' expressly excludes hair transplant and cosmetic or plastic surgery, except when undertaken to restore or to reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma. A supply outside that definition does not get the Sl. No. 74 exemption.",
+      "operational_rule": "IF a bill line is hair transplantation OR cosmetic/plastic surgery THEN do NOT apply GST-IN-HC-001. Determine the applicable rate by looking up the service in the rate notification in force on the invoice date (a salon/beauty-parlour service supplied by a hospital falls in the 'salon or spa service' classification; a surgical procedure supplied by a hospital requires care - do not guess). ALSO FLAG as POTENTIALLY NON-PAYABLE under the applicable scheme/policy: AB PM-JAY excludes cosmetic procedures (PKG-PMJAY-006) and IRDAI standardises a 'Cosmetic or plastic Surgery' exclusion (INS-IRDAI-006). If the correct rate cannot be determined from an official source in force, return INSUFFICIENT_EVIDENCE - do not invent a rate.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": {
+        "taxability": "TAXABLE",
+        "rate": "REFER_TO_RATE_NOTIFICATION_IN_FORCE_ON_INVOICE_DATE",
+        "cgst": "REFER_TO_RATE_NOTIFICATION",
+        "sgst": "REFER_TO_RATE_NOTIFICATION",
+        "igst": "REFER_TO_RATE_NOTIFICATION",
+        "conditions": ["Service is hair transplant", "OR service is cosmetic/plastic surgery not for reconstruction"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Tax treatment only."
+      },
+      "included_items": [],
+      "excluded_items": ["Reconstructive surgery for congenital defects, developmental abnormalities, injury or trauma - this REMAINS exempt"],
+      "exceptions": [
+        "Reconstructive surgery to restore or reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma remains exempt under GST-IN-HC-001"
+      ],
+      "conditions": [],
+      "effective_from": "2017-07-01",
+      "effective_until": "",
+      "authority": "CBIC / GST Council",
+      "document_title": "Notification No. 12/2017-Central Tax (Rate), para 2(zg)",
+      "document_type": "EXEMPTION_NOTIFICATION",
+      "document_number": "12/2017-Central Tax (Rate)",
+      "legal_basis": {
+        "act": "Central Goods and Services Tax Act, 2017",
+        "section": "11(1)",
+        "rule": "",
+        "notification": "12/2017-CT(R)",
+        "entry": "para 2(zg)",
+        "circular": "",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://cbic-gst.gov.in/pdf/cir-177-08-2022-cgst.pdf",
+        "page": "",
+        "section": "Para 13.3",
+        "paragraph": "13.3",
+        "exact_source_text": "\u201chealth care services\u201d means any service by way of diagnosis or treatment or care for illness, injury, deformity, abnormality or pregnancy in any recognised system of medicines in India and includes services by way of transportation of the patient to and from a clinical establishment, but does not include hair transplant or cosmetic or plastic surgery, except when undertaken to restore or to reconstruct anatomy or functions of body affected due to congenital defects, developmental abnormalities, injury or trauma.\u201d",
+        "verification_notes": "Same definition appears verbatim in the consolidated exemption notification on cbic-gst.gov.in and gstcouncil.gov.in."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true
+      }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-001",
+      "category": "PACKAGE_RULE",
+      "subject": "AB PM-JAY package rate is a SCHEME PAYMENT RATE, not a legal cap on hospital charges",
+      "item_or_service": "All HBP packages (1,949 packages in HBP 2022)",
+      "item_classification": "Scheme package",
+      "applies_to": {
+        "provider_type": "empanelled healthcare provider (EHCP) under AB PM-JAY",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": "family floater of an enrolled AB PM-JAY household"
+      },
+      "rule_type": "PACKAGE_RATE",
+      "rule_statement": "The Insurance Company / trust shall reimburse claims of the EHCP under AB PM-JAY based on Package Rates. For hospitalisation or day care, the package rate shall be treated as a comprehensive rate and shall include all costs associated with the treatment.",
+      "operational_rule": "The HBP rate (National Reference Price / Tier 1 / Tier 2 / Tier 3) is what the government scheme PAYS THE EMPANELLED HOSPITAL. IT IS NOT A LEGAL CEILING ON WHAT THE HOSPITAL MAY CHARGE A PATIENT. Final Procedure Price = Procedure price + Stratification rate (if any) + Incentive (if applicable) + Implant(s) rate (if any). When auditing an AB PM-JAY cashless bill, the correct finding for a package-rate overrun is 'ABOVE SCHEME PACKAGE RATE' (scheme payment reduction), NOT 'hospital overcharged the patient' - unless a separate patient-facing rule (see PKG-PMJAY-010) is also breached.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "PER_PACKAGE" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PACKAGE_RATE",
+        "amount": "per HBP package master",
+        "unit": "INR_PER_PACKAGE",
+        "who_is_bound": "The scheme (Insurer / trust) in its payment to the empanelled hospital. NOT a statutory cap on the hospital's charge to a patient.",
+        "notes": "Differential pricing by city tier (Tier 1 / Tier 2 / Tier 3) and level of care. States/UTs may increase package prices by up to 10% over NHA-configured rates."
+      },
+      "included_items": [
+        "All costs associated with the treatment, including but not limited to the treatments covered in section 2.5 (registration charges, bed charges, nursing and boarding charges, etc.)"
+      ],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [
+        "Differential pricing: surgical packages - Tier 1 City 25%, Tier 2 City 17%, Tier 3 base; medical packages - Tier 1 15%, Tier 2 15%, Tier 3 base",
+        "Implant cost is computed separately from the procedure price"
+      ],
+      "effective_from": "2022-04-08",
+      "effective_until": "",
+      "authority": "National Health Authority (NHA), Ministry of Health and Family Welfare",
+      "document_title": "Revised User Guidelines on National Health Benefit Packages (HBP 2.0, 2.1, 2.2 and 2022)",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": {
+        "act": "",
+        "section": "",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 5 and Section 5.1 (Package Rates)",
+        "circular": "",
+        "order": "O.M. No. S-12012/183/2022-NHA (Pt.1), dated 01.02.2022",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "page": "PDF p.31 (printed 137)",
+        "section": "Section 5, Section 5.1",
+        "paragraph": "",
+        "exact_source_text": "The Insurance Company (IC)/trust shall reimburse claims of the EHCP under AB PM-JAY based on Package Rates determined as follows:\n\n\u201cFor the purpose of reimbursement of hospitalisation or day care treatment expenses, the package rate shall be treated as a comprehensive rate and shall include all costs associated with the treatment, including, but not limited to, the treatments covered in section 2.5 above.\u201d\n\n\u201cFinal Procedure Price = Procedure price + Stratification rate (if any) + Incentive (if applicable) + Implant(s) rate (if any).\u201d",
+        "package_master_url": "https://nha.gov.in/strapi/uploads/HBP_2022_14bf060cbb.pdf",
+        "corroborating_official_url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=1814806",
+        "corroborating_text": "During the event NHA launched the new version of Health Benefit Package (HBP) 2022\u2026 The new version has added 365 new procedures taking the total package count to 1949. With HBP 2022, differential pricing is being introduced for the first time under the scheme based upon the type of city and level of care."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": {
+        "source_verified": true,
+        "citation_verified": true,
+        "effective_date_verified": true,
+        "current_status_verified": true,
+        "versioning_warning": "A later revision with 1,961 procedures and revised rates for 350 packages is referenced in a Lok Sabha reply dated 28.03.2025 (pib.gov.in/Pressreleaseshare.aspx?PRID=2116209), but the operative rate master published on nha.gov.in is still HBP 2022 (06.04.2022). Treat HBP 2022 as the published rate master and flag bills whose discharge date is after the 2025 revision as REQUIRING_REVIEW."
+      }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-002",
+      "category": "PRICE_LIMIT",
+      "subject": "AB PM-JAY benefit cover - INR 5 lakh per family per year",
+      "item_or_service": "Entire AB PM-JAY claim wallet",
+      "item_classification": "Scheme payment ceiling",
+      "applies_to": {
+        "provider_type": "any AB PM-JAY empanelled provider",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": "family floater basis; no cap on family size or age; pre-existing diseases covered from day 1"
+      },
+      "rule_type": "SCHEME_PAYMENT_CEILING",
+      "rule_statement": "The benefit cover of INR 5 lakh per family per year is provided on a family floater basis. AB PM-JAY does not impose any cap on family size or age of members.",
+      "operational_rule": "IF cumulative approved AB PM-JAY claims for a family in a financial year exceed INR 5,00,000 THEN further treatment is not payable under the scheme. Flag as 'ABOVE SCHEME COVER LIMIT'. This is a limit on GOVERNMENT PAYMENT, not a limit on what a hospital may bill. A hospital may lawfully bill a beneficiary beyond INR 5 lakh for non-covered / additional services; the scheme simply does not pay. EXCEPTION: where the package cost itself exceeds the INR 5 lakh wallet limit (e.g. certain high-cost procedures), treatment is still allowed.",
+      "threshold": { "operator": ">", "value": "500000", "unit": "INR_PER_FAMILY_PER_YEAR" },
+      "amount": { "value": "500000", "currency": "INR", "unit": "INR_PER_FAMILY_PER_YEAR" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "500000",
+        "unit": "INR_PER_FAMILY_PER_YEAR",
+        "who_is_bound": "The scheme payer (Central/State Government / insurer-trust). NOT a cap on the hospital's charge to the patient.",
+        "notes": "Exception: if the package cost itself is higher than the maximum wallet limit of Rs. 5 lakh, such as certain high-cost procedures, the case is still to be considered."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [
+        "Where the package cost itself exceeds the INR 5 lakh wallet limit (certain high-cost procedures)"
+      ],
+      "conditions": [],
+      "effective_from": "2018-09-23",
+      "effective_until": "",
+      "authority": "National Health Authority / PIB, Ministry of Health and Family Welfare",
+      "document_title": "Revised User Guidelines on National Health Benefit Packages (HBP 2.0, 2.1, 2.2 and 2022)",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Section 2 (Benefit cover)", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "page": "PDF p.10 (printed 116)",
+        "section": "Section 2",
+        "paragraph": "",
+        "exact_source_text": "The benefit cover of \u20b95 lakh per family per year is provided on a family floater basis, which means it may be utilised by one or more members of the family. AB PM-JAY does not impose any cap on family size or age of members. In addition, pre-existing diseases are covered from the first day of enrolment. All treatment components listed above are to be provided on a cashless and paperless basis through EHCPs.",
+        "wallet_exception_text": "the package cost itself is higher than the maximum wallet limit of Rs. 5 lakh, such as in the case of certain high-cost procedures",
+        "wallet_exception_page": "PDF p.33 (printed 139), Section 5.6"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-003",
+      "category": "TARIFF_RULE",
+      "subject": "AB PM-JAY per-day medical management rates by bed category",
+      "item_or_service": "Routine Ward, HDU, ICU without ventilator, ICU with ventilator - per-day medical management",
+      "item_classification": "Medical management package",
+      "applies_to": {
+        "provider_type": "AB PM-JAY empanelled provider",
+        "patient_type": "AB PM-JAY beneficiary on prolonged medical management",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "PER_DAY_REIMBURSEMENT_RATE",
+      "rule_statement": "Per-day medical management packages are stratified across four categories: Routine Ward INR 2,100; High Dependency Unit (HDU) INR 3,300; Intensive Care Unit without ventilator support INR 8,500; ICU with ventilator support INR 9,000. These shall not be clubbed together under the same pre-authorisation.",
+      "operational_rule": "IF a medical-management admission is billed per day THEN the payable per-day rate by bed category is: Routine Ward 2100, HDU 3300, ICU w/o ventilator 8500, ICU with ventilator 9000. FLAG 'QUANTITY/BED-CATEGORY ANOMALY' if the ICU days billed exceed the documented ventilator/non-ventilator days, or if ward days are billed at an ICU rate. FLAG 'PACKAGE CLUSTERING' if more than one of the four categories is claimed under a single pre-authorisation. These are per-day scheme rates, NOT maximum charges.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "2100 | 3300 | 8500 | 9000", "currency": "INR", "unit": "INR_PER_DAY" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "REIMBURSEMENT_RATE",
+        "amount": "2100 / 3300 / 8500 / 9000",
+        "unit": "INR_PER_DAY",
+        "who_is_bound": "Scheme payer paying the empanelled hospital. NOT a cap on the hospital's charge to the patient.",
+        "notes": "Rates revised in 2021: ICU with ventilator +100%, ICU without ventilator +136%, HDU +22%, routine ward +17%."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [
+        "The four per-day categories shall not be clubbed together under the same pre-authorisation"
+      ],
+      "conditions": [
+        "Implant cost is considered separately from the package rate in the system, allowing price to vary by type and number of implants used"
+      ],
+      "effective_from": "2021-10-05",
+      "effective_until": "",
+      "authority": "National Health Authority / PIB",
+      "document_title": "Revised User Guidelines on National Health Benefit Packages (HBP 2.0, 2.1, 2.2 and 2022)",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Section 3.2.1", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "page": "PDF p.14 (printed 120)",
+        "section": "Section 3.2.1",
+        "paragraph": "",
+        "exact_source_text": "a. \u20b9 2100 for Routine Ward. b. \u20b9 3,300 for High Dependency unit (HDU). c. \u20b9 8,500 for Intensive Care Unit (ICU) without ventilator support. d. \u9000 for Intensive Care Unit with ventilator support.",
+        "no_clubbing_page": "PDF p.17 (printed 123)",
+        "no_clubbing_text": "Per-day medical management packages under Health Benefit Packages are stratified across four categories: Routine Ward, High Dependency Unit (HDU), Intensive Care Unit (ICU) without ventilator, and ICU with ventilator\u2026 These per-day medical management packages shall not be clubbed together under the same pre-authorisation.",
+        "implant_text": "The cost of implants has been considered separately while calculating the package rate in the system. This allows the system to vary the procedure cost depending on the type and number of implants used during the procedure.",
+        "revision_history_url": "https://pib.gov.in/Pressreleaseshare.aspx?PRID=1761175",
+        "revision_history_text": "rates for ICU with ventilator has been revised by 100 percent, rates for ICU without ventilator by 136 percent, rates for HDU has been revised by 22 percent while prices for routine ward has been revised by 17 percent."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-004",
+      "category": "PACKAGE_RULE",
+      "subject": "Quantity limit - maximum four units of blood transfusion under the Blood Transfusion package",
+      "item_or_service": "Blood transfusion",
+      "item_classification": "Scheme package - Blood Transfusion",
+      "applies_to": {
+        "provider_type": "AB PM-JAY empanelled provider",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "QUANTITY_LIMIT",
+      "rule_statement": "The maximum number of blood transfusion units allowed under the Blood Transfusion procedure in the National Package Master is four units.",
+      "operational_rule": "IF billed_units(blood transfusion) > 4 THEN flag 'QUANTITY ANOMALY - exceeds documented limit of 4 units under the AB PM-JAY Blood Transfusion package'. Do not auto-reject; require clinical justification and escalate for clinical review.",
+      "threshold": { "operator": ">", "value": "4", "unit": "UNITS" },
+      "amount": { "value": "4", "currency": "INR", "unit": "UNITS" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "4",
+        "unit": "UNITS",
+        "who_is_bound": "Scheme payer. NOT a cap on what the hospital may administer or bill.",
+        "notes": "Quantity limit for scheme purposes."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2022-01-03",
+      "effective_until": "",
+      "authority": "National Health Authority",
+      "document_title": "Revised User Guidelines on National Health Benefit Packages (HBP 2.0, 2.1, 2.2 and 2022)",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Section 4.19", "circular": "", "order": "O.M. No. S-12015/134/2021-NHA(HPQA), dated 03.01.2022", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "page": "PDF p.27 (printed 133)",
+        "section": "Section 4.19",
+        "paragraph": "",
+        "exact_source_text": "The maximum number of blood transfusion units allowed under the Blood Transfusion procedure in the National Package Master is four units."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-005",
+      "category": "PACKAGE_RULE",
+      "subject": "Package is all-inclusive - separately billed items are PACKAGE-INCLUDED",
+      "item_or_service": "Registration charges, bed charges, nursing and boarding charges, diagnostics, consumables and other components of a booked package",
+      "item_classification": "Package component",
+      "applies_to": {
+        "provider_type": "AB PM-JAY empanelled provider",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": "a package has been booked / pre-authorised for the admission"
+      },
+      "rule_type": "PACKAGE_INCLUSION",
+      "rule_statement": "The package rate shall be treated as a comprehensive rate and shall include all costs associated with the treatment. The benefit package includes the entire cost of treatment from date of reporting to the time of discharge and 15 days of discharge. Providers are not to charge beneficiaries in any form for package content.",
+      "operational_rule": "IF an AB PM-JAY package has been booked for the admission THEN separately billed lines that are components of that package (registration/admission charges, bed charges, nursing charges, routine diagnostics, consumables, medicines forming part of treatment) are PACKAGE-INCLUDED and must NOT be charged to the beneficiary. Flag each such line as 'PACKAGE-INCLUDED ITEM - SEPARATELY BILLED'. ALSO FLAG the post-discharge tail: 'up to 15 days of discharge' means follow-up services within 15 days of discharge are inside the package and must not be billed.",
+      "threshold": { "operator": "", "value": "15", "unit": "DAYS_POST_DISCHARGE" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PACKAGE_RATE",
+        "amount": "as per HBP package master",
+        "unit": "INR_PER_PACKAGE",
+        "who_is_bound": "The empanelled provider is contractually bound NOT to charge the beneficiary for package content. The scheme is bound to pay the package rate.",
+        "notes": "This is the rule that actually restrains the HOSPITAL'S billing, and it operates contractually through empanelment, not as a tariff statute."
+      },
+      "included_items": [
+        "Registration charges",
+        "Bed charges",
+        "Nursing and boarding charges",
+        "All costs associated with the treatment, including but not limited to the components listed in section 2.5",
+        "Entire cost of treatment from date of reporting to the time of discharge and 15 days of discharge"
+      ],
+      "excluded_items": [],
+      "exceptions": [
+        "Items expressly excluded from the package by the applicable scheme"
+      ],
+      "conditions": [
+        "Applies only where a package has actually been booked / pre-authorised for that admission"
+      ],
+      "effective_from": "2022-04-01",
+      "effective_until": "",
+      "authority": "National Health Authority",
+      "document_title": "Revised User Guidelines on NHBP / Operation Manual for AB PM-JAY (Do's and Don'ts for Empanelled Healthcare Providers)",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Section 5.1; Section 2.5", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "page": "PDF p.31 (printed 137); PDF p.12 (printed 118)",
+        "section": "Section 5.1; Section 2.5",
+        "paragraph": "",
+        "exact_source_text": "For the purpose of reimbursement of hospitalisation or day care treatment expenses, the package rate shall be treated as a comprehensive rate and shall include all costs associated with the treatment, including, but not limited to, the treatments covered in section 2.5 above.",
+        "components_text": "Health Benefit Packages covers the following services under inpatient hospitalisation and day care treatment, as applicable: a. Registration charges \u2026 d. Bed charges e. Nursing and boarding charges \u2026",
+        "operation_manual_url": "https://nha.gov.in/strapi/uploads/Operation_Manual_for_AB_PM_JAY_5b8795878a.pdf",
+        "operation_manual_page": "PDF p.31",
+        "operation_manual_text": "(Do not) Charge from the beneficiaries in any form as the benefit package includes the entire cost of treatment from date of reporting to the time of discharge and 15 days of discharge",
+        "operation_manual_followup_text": "(Do not) Collect any amount towards follow-up consultation & medicines for those cases where follow-up packages are provided, as the services are inherent with the pre-defined package"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-006",
+      "category": "INSURANCE_RULE",
+      "subject": "AB PM-JAY exclusion list - scheme non-payable items",
+      "item_or_service": "Named excluded treatments and conditions",
+      "item_classification": "Scheme exclusion",
+      "applies_to": {
+        "provider_type": "AB PM-JAY empanelled provider",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "NON_PAYABLE",
+      "rule_statement": "AB PM-JAY shall not be liable to make any payment under this policy in respect of any expenses whatsoever incurred in connection with the excluded items listed in Annexure 6 - Exclusions to the Policy.",
+      "operational_rule": "IF a bill line falls within Annexure 6 THEN flag 'NON-PAYABLE ITEM under AB PM-JAY Annexure 6'. Each item below is quoted verbatim from the official guidelines. Apply the exceptions exactly as written (note items 2 and 6 have express exceptions).",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "0",
+        "unit": "INR_PAYABLE",
+        "who_is_bound": "The scheme (not liable to pay). The hospital may still bill the patient - this is a scheme-exclusion finding, NOT a finding that the hospital overcharged.",
+        "notes": "IMPORTANT: a scheme exclusion means the GOVERNMENT WILL NOT PAY. It does not mean the hospital's charge to the patient is unlawful."
+      },
+      "included_items": [],
+      "excluded_items": [
+        "Condition that does not require hospitalization and can be treated under Out Patient Care except those expenses covered under pre and post hospitalization expenses, further expenses incurred at Hospital or Nursing Home primarily for evaluation / diagnostic purposes only during the hospitalized period and expenses on vitamins and tonics etc unless forming part of treatment for injury or disease as certified by the attending physician.",
+        "Any dental treatment or surgery which is corrective, prosthetic, cosmetic procedure, filling of tooth cavity, root canal including wear and tear of teeth, periodontal diseases, dental implants etc. are excluded. Exception to the above would be treatment needs arising from trauma / injury, neoplasia / tumour / cyst requiring hospitalization for bone treatment.",
+        "Any assisted reproductive techniques, or infertility related procedures, unless featuring in the National Health Benefit Package list.",
+        "Vaccination and immunization",
+        "Surgeries related to ageing face & body, laser procedures for tattoo removals, augmentation surgeries and other purely cosmetic procedures such as fat grafting, neck lift, aesthetic rhinoplasty etc.",
+        "Circumcision for children less than 2 years of age shall be excluded (unless necessary for treatment of a disease not excluded hereunder or as may be necessitated due to any accident)",
+        "Persistent Vegetative State: a condition in which a medical patient is completely unresponsive to psychological and physical stimuli and displays no sign of higher brain function, being kept alive only by medical intervention."
+      ],
+      "exceptions": [
+        "Dental: treatment needs arising from trauma / injury, neoplasia / tumour / cyst requiring hospitalization for bone treatment",
+        "Circumcision: excluded only for children less than 2 years of age, and not where necessary for treatment of a non-excluded disease or necessitated due to an accident",
+        "ART / infertility: payable if the procedure features in the National Health Benefit Package list",
+        "Out-patient conditions: pre- and post-hospitalisation expenses, and expenses incurred primarily for evaluation / diagnostic purposes only during the hospitalised period, are covered",
+        "State-specific terms and conditions for exclusions also apply"
+      ],
+      "conditions": ["We request to also refer State specific terms and conditions for exclusions."],
+      "effective_from": "2022-04-01",
+      "effective_until": "",
+      "authority": "National Health Authority",
+      "document_title": "Revised User Guidelines on National Health Benefit Packages (HBP 2.0, 2.1, 2.2 and 2022) - Annexure 6",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Annexure 6 - Exclusions to the Policy", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "page": "PDF p.54 (printed 160)",
+        "section": "Annexure 6",
+        "paragraph": "",
+        "exact_source_text": "AB PM-JAY shall not be liable to make any payment under this policy in respect of any expenses whatsoever incurred by any Insured Person in connection with or in respect of:",
+        "earlier_version_url": "https://nha.gov.in/strapi/uploads/Ayushman_Bharat_PM_JAY_Exclusion_Policy_72a95bb201.pdf",
+        "earlier_version_text": "Exclusion Policy Ayushman Bharat PM-JAY, April 2020"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-007",
+      "category": "PACKAGE_RULE",
+      "subject": "Unspecified Surgical Package (USP) - when and how it may be used",
+      "item_or_service": "Unspecified Surgical Package",
+      "item_classification": "Scheme package (exception pathway)",
+      "applies_to": {
+        "provider_type": "AB PM-JAY empanelled provider",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": "required surgical treatment NOT available in the applicable HBP master AND denial of care would otherwise result"
+      },
+      "rule_type": "ELIGIBILITY_CONDITION",
+      "rule_statement": "A USP may be considered only where a required surgical treatment or procedure is not available in the applicable HBP master and where denial of care would otherwise result. USPs should be used only in exceptional or life-saving circumstances.",
+      "operational_rule": "Flag 'PACKAGE-CODE MISMATCH' when a surgical bill is booked under a USP code: (1) the procedure must NOT be listed in the HBP master; (2) it must not be a medical-management case; (3) government-reserved packages cannot be availed by private hospitals under USP; (4) individual drugs or diagnostics cannot be availed under USP - only listed drugs/diagnostics with fixed price schedules; (5) pre-auth approval must be obtained within 48 hours of receipt at PPD level, else auto-rejected. For payment, the PPD may consider the rate of the closest matching listed surgery; the approved amount is final and not subject to subsequent deduction.",
+      "threshold": { "operator": "<=", "value": "500000", "unit": "INR_APPROVAL_DELEGATED_TO_SHA" },
+      "amount": { "value": "500000", "currency": "INR", "unit": "INR_APPROVAL_LIMIT" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "500000",
+        "unit": "INR_APPROVAL_LIMIT",
+        "who_is_bound": "NHA / State Health Agency approval authority (delegated). The hospital's own charge is unaffected.",
+        "notes": "Requests for booking USP up to Rs. 5 lakh are approved by the respective SHA; authority has been further delegated to the CEO of the SHA."
+      },
+      "included_items": [],
+      "excluded_items": [
+        "Medical packages (General Medicine, Paediatric Medical Management, Interventional Radiology, Cardiology, Medical Oncology, Radiation Oncology etc.)",
+        "Packages listed in the HBP master",
+        "Government-reserved packages booked by private hospitals",
+        "Individual drugs or diagnostics",
+        "Exclusion-category items"
+      ],
+      "exceptions": [
+        "Co-payment shall not be allowed for unspecified procedures or for packages placed under the exclusion category by NHA/SHA"
+      ],
+      "conditions": [
+        "Pre-authorisation approval must be obtained within 48 hours of receipt of the request at PPD level"
+      ],
+      "effective_from": "2022-02-01",
+      "effective_until": "",
+      "authority": "National Health Authority",
+      "document_title": "Revised User Guidelines on National Health Benefit Packages - Section 3.11",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Sections 3.11, 3.11.1, 3.11.2, 5.6", "circular": "", "order": "O.M. No. S-12012/183/2022-NHA(Pt.1) dated 01.02.2022; O.M. No. S-12018/353/2023-NHA dated 13.02.2026", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "page": "PDF p.17-18 (printed 123-124); PDF p.34 (printed 140)",
+        "section": "Section 3.11.1; Section 3.11.2; Section 5.6",
+        "paragraph": "",
+        "exact_source_text": "An Unspecified Surgical Package (USP) may be considered only where a required surgical treatment or procedure is not available in the applicable HBP master and where denial of care would otherwise result.",
+        "not_listed_text": "To book packages under unspecified category, the package should not be listed under the respective HBP master.",
+        "not_medical_text": "USP is not applicable for medical packages. (E.g., General Medicine, Paediatric Medical Management, Interventional Radiology, Cardiology, Medical Oncology, Radiation Oncology etc.).",
+        "reserved_text": "Government reserved packages cannot be availed by private hospitals under USP code.",
+        "drugs_text": "Individual drugs or diagnostics cannot be availed under USP code. Only listed drugs and diagnostics with fixed price schedules, listed under the drop down of respective specialties, are included for blocking treatments.",
+        "amount_text": "For deciding the approval amount, the PPD may consider the rate of the closest matching surgery available under listed AB PM-JAY packages. The amount approved by the PPD shall be treated as final, shall be communicated to the hospital, and shall not be subject to subsequent deduction or partial approval by the CPD.",
+        "time_text": "The entire Unspecified package pre-auth approval must happen within 48 hours of receipt of such request at PPD level. In case of no decision, the pre-auth shall be auto rejected",
+        "delegation_text": "the Governing Board of NHA decided to delegate the authority to approve requests for booking USP up to Rs. 5 lakh to respective SHA (O.M. No. S-12012/183/2022-NHA(Pt.1), dated 01 February 2022 (Annexure 4) and as per O.M. No. S-12018/353/2023-NHA, dated 13th February 2026 (Annexure 5), the authority of USP approval has been given to CEO of the respective SHA.",
+        "copay_text": "co-payment shall not be allowed for unspecified procedures or for packages placed under the exclusion category by NHA/SHA"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-008",
+      "category": "TARIFF_RULE",
+      "subject": "States / UTs may increase AB PM-JAY package prices by up to 10%",
+      "item_or_service": "AB PM-JAY package rates",
+      "item_classification": "State-negotiated tariff",
+      "applies_to": {
+        "provider_type": "AB PM-JAY empanelled provider",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": "state/UT-specific negotiated rate"
+      },
+      "rule_type": "NEGOTIATED_TARIFF",
+      "rule_statement": "States/UTs may increase package prices by up to 10% over the NHA-configured package rates. There is no limit on reduction of the calibrated package rates. Additional financial burden for package prices beyond 110% of the NHA recommended price is borne exclusively by the State/UT with no additional contribution from NHA.",
+      "operational_rule": "The applicable package rate for an AB PM-JAY bill is the STATE-CONFIGURED rate, not necessarily the NHA master rate. ALWAYS resolve the state-empanelled rate before raising an 'above package rate' finding. Expected range for a Tier-matched surgical package: between 100% and 110% of the NHA-configured rate. Below 100% is legitimate (reductions permitted). Above 110% indicates a state-rate problem, not an NHA-rule breach.",
+      "threshold": { "operator": "<=", "value": "110", "unit": "PERCENT_OF_NHA_CONFIGURED_RATE" },
+      "amount": { "value": "110", "currency": "INR", "unit": "PERCENT_OF_NHA_CONFIGURED_RATE" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "NEGOTIATED_TARIFF",
+        "amount": "<= 110% of NHA-configured rate",
+        "unit": "PERCENT_OF_NHA_CONFIGURED_RATE",
+        "who_is_bound": "State / UT government as scheme payer. NOT a cap on the hospital's charge to a patient.",
+        "notes": "This is the ceiling on STATE TARIFF, i.e. on what the state will pay. It is not a ceiling on hospital charges."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": ["O.M. No. S-12012/183/2022-NHA (Pt.I), dated 01.02.2022 (Annexure 15)"],
+      "effective_from": "2022-02-01",
+      "effective_until": "",
+      "authority": "National Health Authority",
+      "document_title": "Revised User Guidelines on National Health Benefit Packages - Section 9.1(g)",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Section 9.1(g)", "circular": "", "order": "O.M. No. S-12012/183/2022-NHA (Pt.1), 01.02.2022", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "page": "PDF p.45 (printed 151)",
+        "section": "Section 9.1(g)",
+        "paragraph": "",
+        "exact_source_text": "States/UTs may increase package prices by up to 10% over the NHA-configured package rates. However, there shall be no limit on reduction of the calibrated package rates. The additional financial burden for package priced beyond 110% of the NHA recommended price would be borne exclusively by the State/UT with no additional contribution from NHA."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-009",
+      "category": "TARIFF_RULE",
+      "subject": "Implant and device rates are separately payable under AB PM-JAY (verified device ceilings)",
+      "item_or_service": "Implants, stents, valves, IOL, mesh and similar devices",
+      "item_classification": "Implant rate (separately mapped)",
+      "applies_to": {
+        "provider_type": "AB PM-JAY empanelled provider",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "DEVICE_RATE",
+      "rule_statement": "The cost of implants has been considered separately while calculating the package rate in the system. Final Procedure Price = Procedure price + Stratification rate (if any) + Incentive (if applicable) + Implant(s) rate (if any).",
+      "operational_rule": "When a device line appears on an AB PM-JAY bill, evaluate it against the implant rate mapped to the booked package, NOT against the procedure package rate. Verified implant rates: ASD Device 62000; Coronary Stent for PDA stenting - Bare Metal 9373, Drug Eluting 34128; Catheter for Electrophysiology 76000; Mechanical Valve - Bileaflet 40000, Tilting Disc 28000; Tissue Valve 80000; Mesh 6x3 Polypropylene 2000; Foldable Hydrophobic intraocular lens 3000. Flag 'ABOVE IMPLANT RATE' when the billed device price exceeds the mapped rate. Flag 'DEVICE MAPPING MISMATCH' when a device billed does not match any device mapped to the booked package.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "62000 | 9373 | 34128 | 76000 | 40000 | 28000 | 80000 | 2000 | 3000", "currency": "INR", "unit": "INR_PER_DEVICE" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "per mapped implant rate in HBP master",
+        "unit": "INR_PER_DEVICE",
+        "who_is_bound": "Scheme payer paying the empanelled hospital. NOT a cap on the hospital's charge to the patient.",
+        "notes": "Device rate is the reimbursement reference for the scheme."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [],
+      "effective_from": "2022-04-06",
+      "effective_until": "",
+      "authority": "National Health Authority",
+      "document_title": "HBP 2022 AB PM-JAY Package Master",
+      "document_type": "SCHEME_RATE_MASTER",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Implant mapped / implant cost columns", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/HBP_2022_14bf060cbb.pdf",
+        "page": "PDF pp. 17, 124, 185, 195",
+        "section": "Implant mapped column",
+        "paragraph": "",
+        "exact_source_text": "ASD Device - 62000; Coronary Stent for PDA stenting - Bare Metal - 9373 ... Drug Eluting - 34128; Catheter for Electrophysiology - 76000; Mechanical Valve - Bileaflet - 40000; Mechanical Valve - Tilting Disc - 28000; Tissue Valve - 80000; Mesh - 6 X 3 - Polypropylene - 2000; Foldable Hydrophobic intraocular lens 3000",
+        "mechanism_url": "https://nha.gov.in/strapi/uploads/National_Health_Benefits_Packages_Guidelines_fceb804a58.pdf",
+        "mechanism_text": "The cost of implants has been considered separately while calculating the package rate in the system. This allows the system to vary the procedure cost depending on the type and number of implants used during the procedure."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "PKG-PMJAY-010",
+      "category": "PACKAGE_RULE",
+      "subject": "Empanelled provider must not charge the beneficiary for package content, follow-ups or blood procurement",
+      "item_or_service": "Any charge levied on the AB PM-JAY beneficiary",
+      "item_classification": "Provider conduct obligation",
+      "applies_to": {
+        "provider_type": "AB PM-JAY empanelled healthcare provider (EHCP)",
+        "patient_type": "AB PM-JAY beneficiary",
+        "scheme_or_insurer": "Ayushman Bharat PM-JAY",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "BILLING_PROHIBITION",
+      "rule_statement": "Empanelled providers must not charge beneficiaries in any form, must not collect amounts towards follow-up consultation and medicines where follow-up packages are provided, and must not collect money from beneficiaries or family to procure blood or blood products.",
+      "operational_rule": "THIS IS THE RULE THAT BINDS THE HOSPITAL. On an AB PM-JAY bill, flag every patient-payable line as 'PROHIBITED PATIENT CHARGE under the AB PM-JAY empanelment obligations' if it relates to: (a) package content; (b) follow-up consultation or medicines where a follow-up package is provided; (c) blood / blood product procurement; (d) any other amount for services inherent in the pre-defined package. Unlike a reimbursement-rate overrun, this is a genuine finding that the HOSPITAL overcharged the patient - but it is a contractual/empanelment obligation, not a tariff statute. Route for escalation to NHA / State Health Agency.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "MAXIMUM_CHARGE",
+        "amount": "0",
+        "unit": "INR_PATIENT_PAYABLE",
+        "who_is_bound": "THE HOSPITAL (empanelled healthcare provider). This is the one rule family in this database that genuinely restricts what the hospital may charge the patient.",
+        "notes": "Basis: contractual obligation under AB PM-JAY empanelment, not a tariff statute. It does not apply to non-empanelled or self-pay patients."
+      },
+      "included_items": [],
+      "excluded_items": ["Charges from non-empanelled/self-pay patients", "Charges for items outside the booked package and not excluded"],
+      "exceptions": [],
+      "conditions": ["Applies only to AB PM-JAY empanelled providers and beneficiaries"],
+      "effective_from": "2022-04-01",
+      "effective_until": "",
+      "authority": "National Health Authority",
+      "document_title": "Operation Manual for AB PM-JAY - Do's and Don'ts for Empanelled Healthcare Providers",
+      "document_type": "SCHEME_GUIDELINE",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "Annexure 1 - Do's and Don'ts", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "https://nha.gov.in/strapi/uploads/Operation_Manual_for_AB_PM_JAY_5b8795878a.pdf",
+        "page": "PDF p.31-32",
+        "section": "Annexure 1",
+        "paragraph": "",
+        "exact_source_text": "(Do not) Charge from the beneficiaries in any form as the benefit package includes the entire cost of treatment from date of reporting to the time of discharge and 15 days of discharge",
+        "followup_text": "(Do not) Collect any amount towards follow-up consultation & medicines for those cases where follow-up packages are provided, as the services are inherent with the pre-defined package",
+        "blood_text": "(Do not) Collect money from beneficiaries / family to procure blood / blood products"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-001",
+      "category": "INSURANCE_RULE",
+      "subject": "IRDAI List II - items subsumed into room charges must NOT be separately billed by hospitals",
+      "item_or_service": "Items subsumed into Room Charges (37 items)",
+      "item_classification": "Health insurance standardization - Annexure I, List II",
+      "applies_to": {
+        "provider_type": "network / empanelled hospital (cashless cases)",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "SUBSUMED_ITEM",
+      "rule_statement": "Costs in List II are to be subsumed into the Room Charges. Insurers must put in place measures to ensure that items which are part of room charges shall not be billed to the policyholders by the hospitals, and every insurer shall inform or notify the same to the hospitals and the policyholders suitably. All insurers are advised to make it part of their service level agreement with the network providers (hospitals) in case of cashless cases.",
+      "operational_rule": "IF a bill line matches any List II item THEN flag 'PACKAGE-INCLUDED / SUBSUMED ITEM - SEPARATELY BILLED'. The proper finding is that the item is already inside the room charge and must not be billed separately to the patient or claimed separately. This is the single most productive duplicate-charge check for Indian hospital bills. NOTE: it binds the HOSPITAL through the insurer-hospital SLA in cashless network cases. It is NOT a tariff statute and does NOT cap what a hospital may charge a self-paying patient.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "0",
+        "unit": "INR_SEPARATELY_BILLABLE",
+        "who_is_bound": "The HOSPITAL, via the service level agreement with the insurer (cashless network cases); and the insurer's payable amount.",
+        "notes": "Contractual (insurer-hospital SLA), not statutory. Applies in cashless network cases; for reimbursements with non-network providers the insurer settles per the policy contract."
+      },
+      "included_items": [
+        "BABY CHARGES (UNLESS SPECIFIED/INDICATED)",
+        "HAND WASH",
+        "SHOE COVER",
+        "CAPS",
+        "CRADLE CHARGES",
+        "COMB",
+        "EAU-DE-COLOGNE / ROOM FRESHNERS",
+        "FOOT COVER",
+        "GOWN",
+        "SLIPPERS",
+        "TISSUE PAPER",
+        "TOOTH PASTE",
+        "TOOTH BRUSH",
+        "BED PAN",
+        "FACE MASK",
+        "FLEXI MASK",
+        "HAND HOLDER",
+        "SPUTUM CUP",
+        "DISINFECTANT LOTIONS",
+        "LUXURY TAX",
+        "HVAC",
+        "HOUSE KEEPING CHARGES",
+        "AIR CONDITIONER CHARGES",
+        "IM IV INJECTION CHARGES",
+        "CLEAN SHEET",
+        "BLANKET/WARMER BLANKET",
+        "ADMISSION KIT",
+        "DIABETIC CHART CHARGES",
+        "DOCUMENTATION CHARGES / ADMINISTRATIVE EXPENSES",
+        "DISCHARGE PROCEDURE CHARGES",
+        "DAILY CHART CHARGES",
+        "ENTRANCE PASS / VISITORS PASS CHARGES",
+        "EXPENSES RELATED TO PRESCRIPTION ON DISCHARGE",
+        "FILE OPENING CHARGES",
+        "INCIDENTAL EXPENSES / MISC. CHARGES (NOT EXPLAINED)",
+        "PATIENT IDENTIFICATION BAND / NAME TAG",
+        "PULSEOXYMETER CHARGES"
+      ],
+      "excluded_items": [],
+      "exceptions": ["BABY CHARGES only unless specified/indicated"],
+      "conditions": ["Cashless network cases: enforced via the insurer-hospital service level agreement"],
+      "effective_from": "2020-07-22",
+      "effective_until": "",
+      "authority": "Insurance Regulatory and Development Authority of India (IRDAI)",
+      "document_title": "Master Circular on Standardization of Health Insurance Products",
+      "document_type": "REGULATORY_CIRCULAR",
+      "document_number": "IRDAI/HLT/REG/CIR/193/07/2020",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34(1)(a)",
+        "rule": "",
+        "notification": "IRDAI (Health Insurance) Regulations, 2016 - Regulation 2(i)(o), 18, 31(e) and 37",
+        "entry": "Section 1, Chapter III, Annexure I, paragraph 2",
+        "circular": "IRDAI/HLT/REG/CIR/193/07/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+        "page": "Section 1, Chapter III, Annexure I, para 2",
+        "section": "Annexure I, para 2",
+        "paragraph": "2",
+        "exact_source_text": "Where the costs are to be subsumed into the room charges specified in List \u2013 II or procedure charges specified in List III or costs of treatment (including costs of diagnostics) specified in List IV, all claims shall be settled in accordance to the terms and conditions of the policy contract. Insurers shall put in place measures to ensure that items which are part of room / surgical procedure / treatment (including diagnostics) as referred in the lists herein shall not be billed to the policyholders by the hospitals and every insurer shall inform or notify the same to the hospitals and the policyholders suitably. Accordingly, all insurers are advised to make it part of their service level agreement with the network providers (hospitals) in case of cashless cases. In case of reimbursements (with other than network providers) Insurers shall settle the claims as per the terms and conditions of the policy contract.",
+        "list_ii_source_url": "https://irdai.gov.in/en/document-detail?documentId=392476",
+        "verification_notes": "Non-compliant products were to be modified on or before 30.09.2024 per IRDAI/HLT/CIR/PRO/84/5/2024. Verify list membership against the live PDF before a production finding."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-002",
+      "category": "INSURANCE_RULE",
+      "subject": "IRDAI List I - items that MAY be retained as optional items (not automatically excluded)",
+      "item_or_service": "Optional non-payable-capable items (68 items)",
+      "item_classification": "Health insurance standardization - Annexure I, List I",
+      "applies_to": {
+        "provider_type": "any hospital",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "OPTIONAL_ITEM",
+      "rule_statement": "Items in List I are those that may be retained 'as it is' as optional items - i.e. they are NOT automatically excluded and NOT automatically subsumed. Cover depends on the policy.",
+      "operational_rule": "IF a bill line matches a List I item (for example TELEPHONE CHARGES, FOOD CHARGES OTHER THAN PATIENT's DIET PROVIDED BY HOSPITAL, LAUNDRY CHARGES, ATTENDANT CHARGES, PRIVATE NURSES CHARGES, AMBULANCE, OXYGEN CYLINDER, DIAPER OF ANY TYPE, MEDICAL CERTIFICATE) THEN classify as 'OPTIONAL COVER ITEM'. Flag as NON-PAYABLE only if the policy schedule does not offer cover for it. DO NOT auto-reject a List I item - the correct output is 'REQUIRES POLICY REVIEW'. Note that List I is also frequently used as an insurance-side exclusion list even where the item is optional; report both readings.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Optional items. No automatic exclusion and no automatic subsumption. The insurer's payable amount depends on the policy schedule."
+      },
+      "included_items": [
+        "BABY FOOD", "BABY UTILITIES CHARGES", "BEAUTY SERVICES", "BELTS/ BRACES", "BUDS", "COLD PACK/HOT PACK",
+        "CARRY BAGS", "EMAIL / INTERNET CHARGES", "FOOD CHARGES (OTHER THAN PATIENT's DIET PROVIDED BY HOSPITAL)",
+        "LEGGINGS", "LAUNDRY CHARGES", "MINERAL WATER", "SANITARY PAD", "TELEPHONE CHARGES", "GUEST SERVICES",
+        "CREPE BANDAGE", "DIAPER OF ANY TYPE", "EYELET COLLAR", "SLINGS",
+        "BLOOD GROUPING AND CROSS MATCHING OF DONORS SAMPLES",
+        "SERVICE CHARGES WHERE NURSING CHARGE ALSO CHARGED", "Television Charges", "SURCHARGES", "ATTENDANT CHARGES",
+        "EXTRA DIET OF PATIENT (OTHER THAN THAT WHICH FORMS PART OF BED CHARGE)", "BIRTH CERTIFICATE",
+        "CERTIFICATE CHARGES", "COURIER CHARGES", "MEDICAL CERTIFICATE", "MEDICAL RECORDS", "PHOTOCOPIES CHARGES",
+        "MORTUARY CHARGES", "WALKING AIDS CHARGES", "OXYGEN CYLINDER (FOR USAGE OUTSIDE THE HOSPITAL)", "SPACER",
+        "SPIROMETRE", "NEBULIZER KIT", "STEAM INHALER", "ARMSLING", "THERMOMETER", "CERVICAL COLLAR", "SPLINT",
+        "DIABETIC FOOT WEAR", "LAUNDRY CHARGES",
+        "KNEE BRACES (LONG/ SHORT/ HINGED)", "KNEE IMMOBILIZER/SHOULDER IMMOBILIZER", "LUMBO SACRAL BELT",
+        "NIMBUS BED OR WATER OR AIR BED CHARGES", "AMBULANCE COLLAR", "AMBULANCE EQUIPMENT", "ABDOMINAL BINDER",
+        "PRIVATE NURSES CHARGES- SPECIAL NURSING CHARGES", "SUGAR FREE Tablets",
+        "CREAMS POWDERS LOTIONS (Toiletries are not payable, only prescribed medical pharmaceuticals payable)",
+        "ECG ELECTRODES", "GLOVES", "NEBULISATION KIT",
+        "ANY KIT WITH NO DETAILS MENTIONED [DELIVERY KIT, ORTHOKIT, RECOVERY KIT, ETC]", "KIDNEY TRAY", "MASK",
+        "OUNCE GLASS", "OXYGEN MASK", "PELVIC TRACTION BELT", "PAN CAN", "TROLLY COVER",
+        "UROMETER, URINE JUG", "AMBULANCE", "VASOFIX SAFETY"
+      ],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": ["Payability depends on the policy schedule - always emit REQUIRES POLICY REVIEW, never an auto-rejection"],
+      "effective_from": "2020-07-22",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Master Circular on Standardization of Health Insurance Products",
+      "document_type": "REGULATORY_CIRCULAR",
+      "document_number": "IRDAI/HLT/REG/CIR/193/07/2020",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34(1)(a)",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 1, Chapter III, Annexure I, paragraph 1(i)",
+        "circular": "IRDAI/HLT/REG/CIR/193/07/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+        "page": "Section 1, Chapter III, Annexure I",
+        "section": "Annexure I, List I",
+        "paragraph": "1",
+        "exact_source_text": "i. LIST\u2013 I:: Items that may be retained 'as it is' as optional items",
+        "cross_confirmed_url": "https://irdai.gov.in/en/document-detail?documentId=392476",
+        "verification_notes": "Wording reproduced verbatim from IRDAI Annexure I. Two List I items appear in the extract as duplicates across numbering (LAUNDRY CHARGES); de-duplicate at load time. Re-verify list membership against the live PDF before a production finding."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-003",
+      "category": "INSURANCE_RULE",
+      "subject": "IRDAI List IV - items subsumed into costs of treatment (including diagnostics)",
+      "item_or_service": "Items subsumed into costs of treatment",
+      "item_classification": "Health insurance standardization - Annexure I, List IV",
+      "applies_to": {
+        "provider_type": "network / empanelled hospital (cashless cases)",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "SUBSUMED_ITEM",
+      "rule_statement": "Costs in List IV are to be subsumed into the costs of treatment (including costs of diagnostics). Hospitals must not bill these items to the policyholders.",
+      "operational_rule": "IF a bill line matches a List IV item THEN flag 'SUBSUMED INTO COST OF TREATMENT - SEPARATELY BILLED'. High-yield matches on Indian bills: ADMISSION/REGISTRATION CHARGES, HOSPITALISATION FOR EVALUATION/DIAGNOSTIC PURPOSE, URINE CONTAINER, BLOOD RESERVATION CHARGES AND ANTE NATAL BOOKING CHARGES, BIPAP MACHINE, CPAP/CAPD EQUIPMENTS, INFUSION PUMP-COST, GLUCOMETER & STRIPS, ALCOHOL SWABES, SCRUB SOLUTION/STERILLIUM, NUTRITION PLANNING CHARGES - DIETICIAN CHARGES - DIET CHARGES, VACCINATION CHARGES, ANTISEPTIC MOUTHWASH, LOZENGES, MOUTH PAINT, HIV KIT.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "0",
+        "unit": "INR_SEPARATELY_BILLABLE",
+        "who_is_bound": "The HOSPITAL via the insurer-hospital SLA (cashless network cases); and the insurer's payable amount.",
+        "notes": "Contractual, not statutory."
+      },
+      "included_items": [
+        "ADMISSION/REGISTRATION CHARGES",
+        "HOSPITALISATION FOR EVALUATION/ DIAGNOSTIC PURPOSE",
+        "URINE CONTAINER",
+        "BLOOD RESERVATION CHARGES AND ANTE NATAL BOOKING CHARGES",
+        "BIPAP MACHINE",
+        "CPAP/ CAPD EQUIPMENTS",
+        "INFUSION PUMP\u2013 COST",
+        "HYDROGEN PEROXIDE\\SPIRIT\\ DISINFECTANTS ETC",
+        "NUTRITION PLANNING CHARGES - DIETICIAN CHARGES- DIET CHARGES",
+        "HIV KIT",
+        "ANTISEPTIC MOUTHWASH",
+        "LOZENGES",
+        "MOUTH PAINT",
+        "VACCINATION CHARGES",
+        "ALCOHOL SWABES",
+        "SCRUB SOLUTION/STERILLIUM",
+        "Glucometer & Strips"
+      ],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": ["Cashless network cases: enforced via the insurer-hospital service level agreement"],
+      "effective_from": "2020-07-22",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Master Circular on Standardization of Health Insurance Products",
+      "document_type": "REGULATORY_CIRCULAR",
+      "document_number": "IRDAI/HLT/REG/CIR/193/07/2020",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34(1)(a)",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 1, Chapter III, Annexure I, List IV",
+        "circular": "IRDAI/HLT/REG/CIR/193/07/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+        "page": "Section 1, Chapter III, Annexure I",
+        "section": "Annexure I, List IV",
+        "paragraph": "1(iv)",
+        "exact_source_text": "iv. LIST\u2013 IV:: Costs that are to be subsumed into the costs of treatment",
+        "prohibition_source_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+        "prohibition_text": "Insurers shall put in place measures to ensure that items which are part of room / surgical procedure / treatment (including diagnostics) as referred in the lists herein shall not be billed to the policyholders by the hospitals",
+        "verification_notes": "Re-verify list membership against the live PDF before a production finding."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-004",
+      "category": "INSURANCE_RULE",
+      "subject": "IRDAI List III - items subsumed into the specific (surgical) procedure charges",
+      "item_or_service": "Items subsumed into procedure charges",
+      "item_classification": "Health insurance standardization - Annexure I, List III",
+      "applies_to": {
+        "provider_type": "network / empanelled hospital (cashless cases)",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "SUBSUMED_ITEM",
+      "rule_statement": "Costs in List III are to be subsumed into the specific (for example surgical) procedure charges. Hospitals must not bill these items to the policyholders.",
+      "operational_rule": "IF a surgical bill separately charges an item in List III THEN flag 'SUBSUMED INTO PROCEDURE CHARGES - SEPARATELY BILLED'. High-yield matches: SURGICAL BLADES, HARMONIC SCALPEL, SHAVER, SURGICAL DRILL, EYE KIT, EYE DRAPE, X-RAY FILM, BOYLES APPARATUS CHARGES, COTTON, COTTON BANDAGE, SURGICAL TAPE, CAMERA COVER, REMOVAL CREAM, WARD AND THEATRE BOOKING CHARGES.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "0",
+        "unit": "INR_SEPARATELY_BILLABLE",
+        "who_is_bound": "The HOSPITAL via the insurer-hospital SLA (cashless network cases); and the insurer's payable amount.",
+        "notes": "Contractual, not statutory."
+      },
+      "included_items": [
+        "SURGICAL BLADES", "HARMONIC SCALPEL", "SHAVER", "SURGICAL DRILL", "EYE KIT", "EYE DRAPE",
+        "X-RAY FILM", "BOYLES APPARATUS CHARGES", "COTTON", "COTTON BANDAGE", "SURGICAL TAPE",
+        "CAMERA COVER", "REMOVAL CREAM", "WARD AND THEATRE BOOKING CHARGES"
+      ],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": ["Cashless network cases: enforced via the insurer-hospital service level agreement"],
+      "effective_from": "2020-07-22",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Master Circular on Standardization of Health Insurance Products",
+      "document_type": "REGULATORY_CIRCULAR",
+      "document_number": "IRDAI/HLT/REG/CIR/193/07/2020",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34(1)(a)",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 1, Chapter III, Annexure I, List III",
+        "circular": "IRDAI/HLT/REG/CIR/193/07/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+        "page": "Section 1, Chapter III, Annexure I",
+        "section": "Annexure I, List III",
+        "paragraph": "1(iii)",
+        "exact_source_text": "iii. LIST\u2013 III:: Costs that are to be subsumed into the specific (say surgical) procedure charges",
+        "verification_notes": "CAUTION: PDF text extraction interleaved the numbering of Lists III and IV. Item-to-list membership MUST be re-read from the live IRDAI PDF before a production finding. Do not hard-code without re-verification."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": false, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-005",
+      "category": "INSURANCE_RULE",
+      "subject": "NO IRDAI-mandated room rent cap - the room rent limit is a policy term",
+      "item_or_service": "Room rent / room category",
+      "item_classification": "Health insurance - room rent",
+      "applies_to": {
+        "provider_type": "any hospital",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "DEFINITION_AND_LIMIT_SOURCE",
+      "rule_statement": "Room Rent means the amount charged by a Hospital towards Room and Boarding expenses and shall include the associated medical expenses. IRDAI does not prescribe a room rent ceiling; IRDAI's own consumer material lists 'Limits on Room Rent and ICU Charges' as a term of the policy contract.",
+      "operational_rule": "CRITICAL ENGINE RULE: there is NO government-imposed maximum room rent for a private Indian hospital bill. The applicable room rent limit MUST be read from the policy schedule (policy_schedule.room_rent_limit). If the policy schedule is unavailable, the engine MUST return INSUFFICIENT_EVIDENCE for the room-rent-limit check and MUST NOT fall back to a government rate. SEPARATELY, the GST position on room rent is governed by GST-IN-HC-005 / GST-IN-HC-006 / GST-IN-HC-007 and is entirely independent of any room rent limit. DO NOT conflate the two.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": {
+        "taxability": "NOT_APPLICABLE",
+        "rate": "",
+        "cgst": "",
+        "sgst": "",
+        "igst": "",
+        "conditions": ["Room rent GST treatment is governed separately by GST-IN-HC-005 / 006 / 007"]
+      },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "FROM_POLICY_SCHEDULE",
+        "unit": "INR_PER_DAY",
+        "who_is_bound": "The INSURER's payable amount. NOT a cap on what the hospital may charge.",
+        "notes": "This is the single most common category of engine error to avoid: never hard-code a room rent number. The widely circulated '1% of sum insured' or 'any ICU/double room' conventions are MARKET PRACTICE, not IRDAI rules, and must not be presented as regulatory limits."
+      },
+      "included_items": ["Room and boarding expenses", "Associated medical expenses (as defined)"],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": ["If the policy schedule is unavailable, emit INSUFFICIENT_EVIDENCE"],
+      "effective_from": "2020-07-22",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Master Circular on Standardization of Health Insurance Products",
+      "document_type": "REGULATORY_CIRCULAR",
+      "document_number": "IRDAI/HLT/REG/CIR/193/07/2020",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34(1)(a)",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 1, definition 39 (Room Rent)",
+        "circular": "IRDAI/HLT/REG/CIR/193/07/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+        "page": "Section 1, definitions",
+        "section": "Definition 39",
+        "paragraph": "39",
+        "exact_source_text": "39.Room Rent: Room Rent means the amount charged by a Hospital towards Room and Boarding expenses and shall include the associated medical expenses.",
+        "policy_term_corroboration_url": "https://intranet.irdai.gov.in/en/web/guest/health-dept",
+        "policy_term_corroboration_text": "Insurance products may have some restrictions in the coverage, pay special attention to the following terms and conditions in the policy: \u2022 Limits on Room Rent and ICU Charges"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-006",
+      "category": "INSURANCE_RULE",
+      "subject": "Proportionate deduction for a higher room category is permitted but must be defined in the policy",
+      "item_or_service": "Associated medical expenses when the policyholder chooses a higher room category",
+      "item_classification": "Health insurance - proportionate deduction",
+      "applies_to": {
+        "provider_type": "any hospital",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": "policyholder voluntarily opts for a room category higher than the category eligible under the policy"
+      },
+      "rule_type": "PROPORTIONATE_DEDUCTION",
+      "rule_statement": "Where as part of product design insurers propose proportionate deduction of the 'associated medical expenses' when a policyholder chooses a higher room category than the category that is eligible as per terms and conditions of the policy, they shall define 'associated medical expenses' in the terms and conditions of the policy contract.",
+      "operational_rule": "IF a policyholder's room category exceeds the eligible room category in the policy schedule AND the policy defines 'associated medical expenses' THEN a proportionate deduction of the associated medical expenses may be applied to the INSURER's payable amount. The deductible room-rent differential itself is generally NOT cut - the deduction is on the associated medical expenses. Emit this as an INSURANCE_REVIEW finding against the insurer's payable amount, never as a hospital overcharge. If 'associated medical expenses' is undefined in the policy, the deduction is not supported - emit REQUIRES_INSURANCE_REVIEW.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "proportionate - computed from policy terms",
+        "unit": "INR",
+        "who_is_bound": "The INSURER's payable amount only.",
+        "notes": "Applicable to health insurance products filed on or after 01.10.2020; existing non-compliant policies to be modified from 01.04.2021 onwards."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": ["Deduction not supported where 'associated medical expenses' is undefined in the policy contract"],
+      "conditions": [
+        "Products filed as per the Guidelines on Product Filing in Health Insurance Business on or after 01.10.2020",
+        "All existing non-compliant policy contracts to be modified as and when due for renewal from 01.04.2021 onwards"
+      ],
+      "effective_from": "2020-10-01",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Modified Guidelines on Product filing in Health Insurance Business - Norms on Proportionate Deductions",
+      "document_type": "REGULATORY_CIRCULAR",
+      "document_number": "IRDAI/HLT/REG/CIR/151/06/2020",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34",
+        "rule": "",
+        "notification": "",
+        "entry": "Clause 3 and Clause 8",
+        "circular": "IRDAI/HLT/REG/CIR/151/06/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/365525/Modified+Guidelines+on+Product+filing+in+Health+Insurance+Business-Norms+on.pdf/7b50effc-e553-f0a6-389d-3ca90ab11af5",
+        "page": "",
+        "section": "Clause 3",
+        "paragraph": "3",
+        "exact_source_text": "Where as part of product design \u2026 propose proportionate deduction of the 'associated medical expenses' when a policyholder chooses a higher room category than the category that is eligible as per terms and conditions of the policy, \u2026 define 'associated medical expenses' in the terms and conditions of policy contract.",
+        "applicability_text": "The provisions of these guidelines shall be applicable to the Health Insurance products filed as per Guidelines on Product Filing in Health Insurance Business on or after 01st October, 2020. All policy contracts of the existing health insurance products that are not in compliance with these guidelines shall be modified as and when they are due for renewal from 01st April, 2021 onwards."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-007",
+      "category": "INSURANCE_RULE",
+      "subject": "Exclusion wordings must be incorporated verbatim from the IRDAI standardized code set",
+      "item_or_service": "Health insurance policy exclusions",
+      "item_classification": "Health insurance standardization - Chapter III",
+      "applies_to": {
+        "provider_type": "n/a",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "STANDARDIZED_EXCLUSION",
+      "rule_statement": "While every Insurer may endeavour to minimise the number of exclusions to enhance availability of health insurance coverage, where insurers prefer to incorporate these exclusions, they shall incorporate the same wordings in-verbatim in the policy contracts as prescribed in this chapter.",
+      "operational_rule": "IF an insurer relies on an exclusion to deny a billed line THEN the engine must locate the matching standardized exclusion code in the policy wording and quote it verbatim. Standardized exclusion codes include: Excl01 Pre-Existing Diseases; Excl02 Specified disease/procedure waiting period; Excl08 Cosmetic or plastic Surgery; Excl09 Hazardous or Adventure sports; Excl10 Breach of law; Excl11 Excluded Providers; Excl12 Treatment for, Alcoholism, drug or substance abuse or any addictive condition and consequences thereof; Excl14 Dietary supplements and substances that can be purchased without prescription, including but not limited to Vitamins, minerals and organic substances unless prescribed by a medical practitioner as part of hospitalization claim or day care procedure. If the policy wording does not match the standardized text verbatim, the exclusion challenge may be available to the policyholder - emit INSURANCE_REVIEW. Exclusions in the nature of a sub-limit on room rent, or on named diseases, are NOT permitted as exclusions.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "0 for excluded items",
+        "unit": "INR_PAYABLE",
+        "who_is_bound": "The INSURER's payable amount under the contract of insurance. NOT a cap on hospital charges.",
+        "notes": "Controls the insurer's payable amount only."
+      },
+      "included_items": [],
+      "excluded_items": [
+        "Excl01 - Pre-Existing Diseases",
+        "Excl02 - Specified disease/procedure waiting period",
+        "Excl08 - Cosmetic or plastic Surgery",
+        "Excl09 - Hazardous or Adventure sports",
+        "Excl10 - Breach of law",
+        "Excl11 - Excluded Providers",
+        "Excl12 - Treatment for, Alcoholism, drug or substance abuse or any addictive condition and consequences thereof",
+        "Excl14 - Dietary supplements and substances that can be purchased without prescription, including but not limited to Vitamins, minerals and organic substances unless prescribed by a medical practitioner as part of hospitalization claim or day care procedure"
+      ],
+      "exceptions": [
+        "Exclusions that are in the nature of a sub-limit on room rent, or on named diseases, are not permitted",
+        "Change of gender exclusion is not permitted except where legally mandated sex-reassignment applies",
+        "Sexually transmitted infection exclusion is not permitted except for HIV",
+        "Exclusions attaching to any specific critical illness/medical condition are not permitted",
+        "Exclusions for persons with disabilities / HIV / mental illness are not permitted",
+        "Witness/evidence expenses and expenses for multiple or missing claim documentation are not permitted to be excluded"
+      ],
+      "conditions": [
+        "Exclusion wordings must appear in the policy contract verbatim",
+        "A sub-limit on room rent is a policy term, not a permitted exclusion"
+      ],
+      "effective_from": "2020-07-22",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Master Circular on Standardization of Health Insurance Products",
+      "document_type": "REGULATORY_CIRCULAR",
+      "document_number": "IRDAI/HLT/REG/CIR/193/07/2020",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34(1)(a)",
+        "rule": "",
+        "notification": "",
+        "entry": "Section 2, Chapter II and Chapter III",
+        "circular": "IRDAI/HLT/REG/CIR/193/07/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e",
+        "page": "Section 2, Chapter III",
+        "section": "Chapter III",
+        "paragraph": "3.5",
+        "exact_source_text": "While every Insurer may endeavour to minimise the number of exclusions to enhance availability of health insurance coverage, where insurers prefer to incorporate these exclusions, they shall incorporate the same wordings in-verbatim in the policy contracts as prescribed in this chapter.",
+        "code_headings_url": "https://irdai.gov.in/en/document-detail?documentId=392476",
+        "legal_basis_text": "This Master Circular is issued under the section 14(2)(e) of the IRDAI Act 1999 and section 34 of the Insurance Act, 1938 read with Regulation 7 of schedule-III of IRDAI (Insurance Products) Regulations 2024.",
+        "verification_notes": "The verbatim body text of Excl08, Excl12 and Excl14 was not extractable from the official domain in this pass. The exclusion NAMES and CODES are verified; do not quote the full body wording of these exclusions in a production report without re-reading the official PDF."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-008",
+      "category": "INSURANCE_RULE",
+      "subject": "Excluded Providers (Excl11) - stabilization-stage costs after an accident",
+      "item_or_service": "Treatment in an excluded hospital or by an excluded medical practitioner",
+      "item_classification": "Health insurance standardization - Exclusion K / Excl11",
+      "applies_to": {
+        "provider_type": "hospital excluded and notified by the insurer",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "STANDARDIZED_EXCLUSION",
+      "rule_statement": "Expenses incurred towards treatment in any hospital or by any Medical Practitioner or any other provider specifically excluded by the Insurer and disclosed in its website / notified to the policyholders are not admissible. However, in case of life threatening situations or following an accident, expenses up to the stage of stabilization are payable but not the complete claim.",
+      "operational_rule": "IF the treating hospital appears on the insurer's published excluded-providers list THEN flag 'NON-PAYABLE under Excl11 (Excluded Providers)'. EXCEPTION: in a life-threatening situation or following an accident, expenses UP TO THE STAGE OF STABILIZATION remain payable - so the correct finding is a PARTIAL non-payability from the post-stabilization stage, not a total rejection. Insurers must publish and notify the excluded-provider list; if the list is not available, emit INSUFFICIENT_EVIDENCE.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "0 beyond stabilization stage",
+        "unit": "INR_PAYABLE",
+        "who_is_bound": "The INSURER's payable amount. NOT a cap on hospital charges.",
+        "notes": ""
+      },
+      "included_items": [],
+      "excluded_items": [
+        "Expenses incurred towards treatment in any hospital or by any Medical Practitioner or any other provider specifically excluded by the Insurer and disclosed in its website / notified to the policyholders"
+      ],
+      "exceptions": [
+        "In case of life threatening situations or following an accident, expenses up to the stage of stabilization are payable but not the complete claim",
+        "Explanation: Details of excluded providers shall be provided with the policy document. Insurers to use various means of communication to notify the policyholders, such as e-mail, SMS about the updated list being uploaded in the website."
+      ],
+      "conditions": ["Excluded-provider list must be disclosed on the insurer's website and notified to policyholders"],
+      "effective_from": "2020-02-10",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Amendments in respect of provisions of Guidelines on Standardization of Exclusions in Health Insurance Contracts",
+      "document_type": "REGULATORY_CIRCULAR_AMENDMENT",
+      "document_number": "Amendment to IRDAI/HLT/REG/CIR/177/09/2019 and /176/09/2019",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34",
+        "rule": "",
+        "notification": "",
+        "entry": "Chapter III, Exclusion K (Excl11)",
+        "circular": "Amendment to IRDAI/HLT/REG/CIR/177/09/2019",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/365525/Amendments+in+respect+of+provisions+of+Guidelines+on+Standardization+of+Exc.pdf/fe4822bf-c5eb-de32-d65a-868067bccaab",
+        "page": "",
+        "section": "Chapter III, Exclusion K",
+        "paragraph": "",
+        "exact_source_text": "Expenses incurred towards treatment in any hospital or by any Medical Practitioner or any other provider specifically excluded by the Insurer and disclosed in its website / notified to the policyholders are not admissible. However, in case of life threatening situations or following an accident, expenses up to the stage of stabilization are payable but not the complete claim.\n\n(Explanation: Details of excluded providers shall be provided with the policy document. Insurers to use various means of communication to notify the policyholders, such as e-mail, SMS about the updated list being uploaded in the website.)",
+        "consolidated_into_url": "https://irdai.gov.in/documents/37343/366029/Master+Circular+on+Standardization+of+Health+Insurance+Products.pdf/40548736-71a8-1b76-e28d-0df899407e1e"
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-009",
+      "category": "INSURANCE_RULE",
+      "subject": "Cashless discharge authorization within three hours - delay charge borne by the insurer",
+      "item_or_service": "Final discharge authorization",
+      "item_classification": "Health insurance - claims process obligation",
+      "applies_to": {
+        "provider_type": "any hospital (for the insurer-side obligation)",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": "cashless case"
+      },
+      "rule_type": "PROCESS_SLA",
+      "rule_statement": "Insurer shall grant final authorization within three hours of the receipt of discharge authorization request from the hospital. In no case, the policyholder shall be made to wait to be discharged from the Hospital. If there is any delay beyond three hours, the additional amount if any charged by the hospital shall be borne by the insurer from shareholder's fund.",
+      "operational_rule": "IF a discharge-delay charge appears on the bill as a patient-payable item (for example 'waiting charges', 'delay charges', 'extended stay charges' levied after an authorization delay) THEN flag as an INSURER_OBLIGATION finding: under IRDAI's 2024 Master Circular the additional amount charged by the hospital for a delay beyond three hours is to be borne by the INSURER from its shareholder's fund, not passed to the policyholder. This is one of the few rules in the database where a cost is placed on the insurer rather than the hospital. Escalate to the insurer / IRDDAI grievance channel.",
+      "threshold": { "operator": ">", "value": "3", "unit": "HOURS" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "The INSURER - it must absorb the delay charge from shareholder's fund.",
+        "notes": "Process and cost-allocation obligation. Not a cap on the hospital's charge."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": ["Cashless cases", "In no case, the policyholder shall be made to wait to be discharged from the Hospital"],
+      "effective_from": "2024-05-29",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Master Circular on IRDAI (Insurance Products) Regulations, 2024 - Health Insurance",
+      "document_type": "REGULATORY_CIRCULAR",
+      "document_number": "IRDAI/HLT/CIR/PRO/84/5/2024",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34",
+        "rule": "",
+        "notification": "IRDAI (Insurance Products) Regulations, 2024",
+        "entry": "Chapter I, item 16",
+        "circular": "IRDAI/HLT/CIR/PRO/84/5/2024",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/en/document-detail?documentId=4942918",
+        "page": "",
+        "section": "Chapter I, item 16",
+        "paragraph": "16",
+        "exact_source_text": "Insurer shall grant final authorization within three hours of the receipt of discharge authorization request from the hospital. In no case, the policyholder shall be made to wait to be discharged from the Hospital. If there is any delay beyond three hours, the additional amount if any charged by the hospital shall be borne by the insurer from shareholder's fund.",
+        "transition_text": "The existing products which are not complying with the IRDAI (Insurance Products) Regulations 2024 and this Master Circular shall be modified on or before 30.09.2024."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": true, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "INS-IRDAI-010",
+      "category": "INSURANCE_RULE",
+      "subject": "Pre-existing disease (PED) look-back window - parameterize, do not hard-code",
+      "item_or_service": "Pre-existing disease exclusion",
+      "item_classification": "Health insurance - Excl01",
+      "applies_to": {
+        "provider_type": "n/a",
+        "patient_type": "health insurance policyholder",
+        "scheme_or_insurer": "all insurers (IRDAI-regulated)",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "SCOPE_DEFINITION",
+      "rule_statement": "Pre-Existing Disease (PED) means any condition, ailment, injury or disease that is diagnosed by a physician within the look-back window prior to the effective date of the policy, or for which medical advice or treatment was recommended by or received from a physician within that window.",
+      "operational_rule": "PARAMETERIZE THE LOOK-BACK WINDOW (ped_lookback_months) AND WAITING PERIOD FROM THE POLICY SCHEDULE. DO NOT HARD-CODE A NUMBER. IRDAI's own published sources conflict on this point: a product guideline text states a 48-month window while IRDAI's Health Department FAQ states a 36-month window and a 36-month maximum waiting period. Emit INSURANCE_REVIEW and surface both readings rather than picking one. Additionally: if the policy is renewed during the grace period, all credits (sum insured, No Claim Bonus, specific waiting periods, waiting periods for pre-existing diseases, moratorium period) shall be protected, and credits may be transferred from the existing insurer to the acquiring insurer.",
+      "threshold": { "operator": "", "value": "PARAMETER_FROM_POLICY", "unit": "MONTHS" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": true,
+        "type": "PAYABLE_LIMIT",
+        "amount": "0 during waiting period",
+        "unit": "INR_PAYABLE",
+        "who_is_bound": "The INSURER's payable amount.",
+        "notes": "Unresolved discrepancy flagged in the source. Parameterize."
+      },
+      "included_items": [],
+      "excluded_items": ["Excl01 - Pre-Existing Diseases"],
+      "exceptions": [
+        "Waiting-period credits are protected on renewal during grace period and are portable across insurers",
+        "AB PM-JAY covers pre-existing diseases from the first day of enrolment - see PKG-PMJAY-002"
+      ],
+      "conditions": ["Read the look-back window from the policy schedule"],
+      "effective_from": "2020-07-22",
+      "effective_until": "",
+      "authority": "IRDAI",
+      "document_title": "Guidelines on Standard Vector Borne Disease Health Policy / Master Circular on Standardization of Health Insurance Products",
+      "document_type": "REGULATORY_GUIDELINE",
+      "document_number": "IRDAI/HLT/REG/CIR/193/07/2020",
+      "legal_basis": {
+        "act": "Insurance Act, 1938",
+        "section": "34",
+        "rule": "",
+        "notification": "",
+        "entry": "Definition 3.19 (PED); Excl01",
+        "circular": "IRDAI/HLT/REG/CIR/193/07/2020",
+        "order": "",
+        "schedule": ""
+      },
+      "source": {
+        "official_url": "https://irdai.gov.in/documents/37343/365525/Guidelines+on+Standard+Vector+Borne+Disease+Health+Policy.pdf/0b469fe7-0173-de3b-81a8-84991c0c82f6",
+        "page": "",
+        "section": "Definition",
+        "paragraph": "3.19",
+        "exact_source_text": "Pre-Existing Disease (PED): Preexisting disease means any condition, ailment, injury or disease: a) That is/are diagnosed by a physician within 48 months prior to the effective date of the policy issued by the insurer or its reinstatement b) For which medical advice or treatment was recommended by, or received from a physician within 48 months prior to the effective date of the policy issued by the Insurer or its reinstatement.",
+        "conflicting_official_url": "https://intranet.irdai.gov.in/en/web/guest/health-dept",
+        "conflicting_official_text": "Maximum waiting period under health insurance policy shall not be more than 36 months. (e.g. Waiting period for Pre-existing diseases) / Pre-existing disease (PED) normally means any condition, ailment, injury or disease that is/are diagnosed by a physician not more than 36 months prior to the date of commencement of the policy issued by the insurer",
+        "portability_url": "https://irdai.gov.in/en/document-detail?documentId=4942918",
+        "portability_text": "If the policy is renewed during grace period, all the credits (sum insured, No Claim Bonus, Specific Waiting periods, waiting periods for pre-existing diseases, Moratorium period etc.) accrued under the policy shall be protected. / The policyholder is entitled to transfer the credits gained to the extent of the Sum Insured, No Claim Bonus, specific waiting periods, waiting period for pre-existing disease, Moratorium period etc from the Existing Insurer to the Acquiring Insurer in the previous policy.",
+        "verification_notes": "IRDAI's own published sources conflict (48 months in a product guideline vs 36 months in the Health Dept FAQ). This is a documented, unresolved discrepancy - do not resolve it by guessing."
+      },
+      "status": "UNCERTAIN",
+      "superseded_by": "",
+      "verification": { "source_verified": true, "citation_verified": true, "effective_date_verified": false, "current_status_verified": false }
+    },
+
+    {
+      "rule_id": "ENG-GST-ARITH-001",
+      "category": "GST_RULE",
+      "subject": "Internal consistency check - quantity x rate must equal the billed line amount, and the invoice GST arithmetic must reconcile",
+      "item_or_service": "Any billed line and any GST invoice",
+      "item_classification": "Arithmetic control",
+      "applies_to": {
+        "provider_type": "any",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "ARITHMETIC_CHECK",
+      "rule_statement": "A bill line is internally inconsistent if billed_amount != quantity x unit_price. An invoice is internally inconsistent if taxable_value x rate != tax_amount, or if the sum of line amounts plus tax does not equal the invoice total.",
+      "operational_rule": "PERFORM BEFORE ANY LEGAL CHECK - arithmetic errors are independent of law and are the highest-confidence, lowest-false-positive findings. (1) For each line: expected = quantity x unit_price; if abs(expected - billed_amount) > tolerance THEN flag 'ARITHMETIC ERROR on line'. (2) For the invoice: for each GST slab, verify taxable_value x rate = tax_amount; verify line_total_sum + tax_total = invoice_total; verify that the GST amount shown equals the GST amount implied by the rate applied under the applicable GST rule for that line. NOTE: (3) is a control on internal consistency, NOT proof that the correct RATE was applied - the rate correctness check is governed by GST-IN-HC-001 through GST-IN-HC-014.",
+      "threshold": { "operator": ">", "value": "TOLERANCE", "unit": "INR_OR_PERCENT" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": {
+        "taxability": "NOT_APPLICABLE",
+        "rate": "",
+        "cgst": "",
+        "sgst": "",
+        "igst": "",
+        "conditions": ["Determines the rate actually applied on the invoice so it can be compared against the applicable rule"]
+      },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Mathematical consistency control. No legal source is required because the rule is arithmetic, not legal."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": ["Apply a documented tolerance (for example absolute INR 1 plus a rounding allowance) to avoid rounding false positives"],
+      "conditions": [],
+      "effective_from": "",
+      "effective_until": "",
+      "authority": "Derived control - not a statutory provision",
+      "document_title": "Internal audit control",
+      "document_type": "DERIVED_CONTROL",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "",
+        "page": "",
+        "section": "",
+        "paragraph": "",
+        "exact_source_text": "DERIVED CONTROL - arithmetic identity, not a legal provision. Marked source_verified=false deliberately because no government source is required or cited.",
+        "corroborating_official_url": "",
+        "corroborating_text": ""
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": false, "citation_verified": false, "effective_date_verified": false, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "ENG-DUP-001",
+      "category": "PACKAGE_RULE",
+      "subject": "Duplicate charge control - identical service line appearing more than once",
+      "item_or_service": "Any billed service or item",
+      "item_classification": "Derived control",
+      "applies_to": {
+        "provider_type": "any",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "DUPLICATE_CHECK",
+      "rule_statement": "A duplicate charge exists where the same service or item appears more than once on a bill without supporting evidence justifying the repetition.",
+      "operational_rule": "STEP 1: normalise each bill line description (lowercase, strip punctuation, expand common abbreviations, strip quantities and dates). STEP 2: group lines by normalised description. STEP 3: for each group with count > 1, test the documented legitimate-repetition whitelist before raising a finding: (a) qty-driven items where billed quantity equals the expected clinical frequency for the documented length of stay; (b) daily items where quantity equals the number of chargeable days; (c) items under a per-day medical management package. STEP 4: if no whitelist reason applies, flag 'POTENTIALLY DUPLICATED' - never 'DUPLICATE'. Do not auto-reject: emit the finding with the grouped line numbers and the computed duplicate value so a human can adjudicate.",
+      "threshold": { "operator": ">", "value": "1", "unit": "OCCURRENCES_OF_NORMALISED_LINE" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Derived control. Findings are always 'potentially duplicated', never confirmed."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [
+        "Quantity-driven items where billed quantity matches expected clinical frequency",
+        "Daily items where quantity equals chargeable days",
+        "Per-day medical management package days"
+      ],
+      "conditions": ["Always emit as POTENTIALLY DUPLICATED, never as a confirmed duplicate"],
+      "effective_from": "",
+      "effective_until": "",
+      "authority": "Derived control - not a statutory provision",
+      "document_title": "Internal audit control",
+      "document_type": "DERIVED_CONTROL",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "",
+        "page": "",
+        "section": "",
+        "paragraph": "",
+        "exact_source_text": "DERIVED CONTROL - set-theoretic duplicate detection, not a legal provision. Marked source_verified=false deliberately.",
+        "corroborating_official_url": "",
+        "corroborating_text": ""
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": false, "citation_verified": false, "effective_date_verified": false, "current_status_verified": true }
+    },
+
+    {
+      "rule_id": "ENG-EVID-001",
+      "category": "CLINICAL_RULE",
+      "subject": "Clinical inconsistency must be labelled as a POTENTIAL inconsistency, never a confirmed medical error",
+      "item_or_service": "Any treatment, drug, or investigation line",
+      "item_classification": "Derived control",
+      "applies_to": {
+        "provider_type": "any",
+        "patient_type": "any",
+        "scheme_or_insurer": "",
+        "location": "India",
+        "eligibility": ""
+      },
+      "rule_type": "CLINICAL_REVIEW",
+      "rule_statement": "A treatment line may be flagged as potentially clinically inconsistent with an official clinical guideline, but such a flag must never be presented as a confirmed medical error.",
+      "operational_rule": "ALLOWED OUTPUT VALUES ARE ONLY: POTENTIALLY_CLINICALLY_INCONSISTENT or REQUIRES_CLINICAL_REVIEW. NEVER output CONFIRMED_MEDICAL_ERROR. Required evidence fields for any clinical flag: the guideline or protocol relied on (must be an official MoHFW / NHA / CGHS / professional-body source), the specific billed line, and the reason for the mismatch. Known high-signal patterns that MAY be flagged as potential inconsistencies: investigations not consistent with the documented provisional diagnosis; a drug whose dose or route is inconsistent with the documented diagnosis; a procedure billed without the corresponding documented investigation or clinical note. Where an official Standard Treatment Guideline was not located in this database, emit REQUIRES_CLINICAL_REVIEW with INSUFFICIENT_EVIDENCE rather than asserting a clinical rule.",
+      "threshold": { "operator": "", "value": "", "unit": "" },
+      "amount": { "value": "", "currency": "INR", "unit": "" },
+      "gst": { "taxability": "NOT_APPLICABLE", "rate": "", "cgst": "", "sgst": "", "igst": "", "conditions": [] },
+      "price_control": {
+        "exists": false,
+        "type": "NONE",
+        "amount": "",
+        "unit": "",
+        "who_is_bound": "",
+        "notes": "Derived control. This database contains no verified clinical-guideline rules; MoHFW Standard Treatment Guidelines were not retrievable in verifiable form during build."
+      },
+      "included_items": [],
+      "excluded_items": [],
+      "exceptions": [],
+      "conditions": [
+        "MUST be reported as POTENTIALLY_CLINICALLY_INCONSISTENT or REQUIRES_CLINICAL_REVIEW",
+        "MUST NOT be reported as CONFIRMED_MEDICAL_ERROR",
+        "A guideline citation is mandatory for any clinical flag"
+      ],
+      "effective_from": "",
+      "effective_until": "",
+      "authority": "Derived control - not a statutory provision",
+      "document_title": "Internal audit control",
+      "document_type": "DERIVED_CONTROL",
+      "document_number": "",
+      "legal_basis": { "act": "", "section": "", "rule": "", "notification": "", "entry": "", "circular": "", "order": "", "schedule": "" },
+      "source": {
+        "official_url": "",
+        "page": "",
+        "section": "",
+        "paragraph": "",
+        "exact_source_text": "DERIVED CONTROL - labelling constraint, not a legal provision. Marked source_verified=false deliberately.",
+        "corroborating_official_url": "https://www.clinicalestablishments.mohfw.gov.in/",
+        "corroborating_text": "MoHFW Clinical Establishments portal - the intended authority for Standard Treatment Guidelines; no verifiable STG rule text was extracted during this build. GAP DOCUMENTED, NOT INVENTED."
+      },
+      "status": "CURRENT",
+      "superseded_by": "",
+      "verification": { "source_verified": false, "citation_verified": false, "effective_date_verified": false, "current_status_verified": true }
+    }
+  ],
+
+  "coverage_gaps": [
+    {
+      "gap": "CGHS rate list and room-rent entitlements",
+      "status": "NOT_VERIFIED",
+      "reason": "cghs.gov.in was unreachable and the MoHFW CGHS rate-list PDFs are image-only (no extractable text layer) and no OCR was available during this build. No CGHS figure is encoded here.",
+      "do_not": "Do not cite a CGHS rate or room-rent figure from this database. Add them only after extracting verbatim text from the official CGHS Rate List.",
+      "target_source": "https://www.cghs.mohfw.gov.in/ - CGHS Rate List; OM F. No. Z15025/28/2022/DIR/CGHS dated 12.04.2023 (Revision of Consultation Fee, Room Rent and ICU charges)"
+    },
+    {
+      "gap": "ESIC rate list / rate structure for medical benefits",
+      "status": "NOT_VERIFIED",
+      "reason": "No current official ESIC rate-list document could be located on esic.gov.in with an extractable verbatim text in this build.",
+      "do_not": "Do not encode any ESIC figure. Note in particular that ESIC rates are generally reimbursement rates paid to empanelled hospitals, not caps on hospital charges.",
+      "target_source": "https://esic.gov.in/ - Medical Benefits / rate list; ESI (General) Regulations, 1950"
+    },
+    {
+      "gap": "MoHFW Standard Treatment Guidelines / Clinical Establishments standards",
+      "status": "NOT_VERIFIED",
+      "reason": "No verifiable STG rule text was extracted. Per the evidence standard, nothing was invented.",
+      "do_not": "ENG-EVID-001 therefore permits only REQUIRES_CLINICAL_REVIEW / POTENTIALLY_CLINICALLY_INCONSISTENT, never a clinical error assertion.",
+      "target_source": "https://www.clinicalestablishments.mohfw.gov.in/"
+    },
+    {
+      "gap": "The exact GST RATE applicable to non-exempt room rent above INR 5,000/day",
+      "status": "DELIBERATELY_PARAMETERISED",
+      "reason": "The amending notification (07/2022-CT(R)) removes the exemption but the applicable rate must be read from the rate notification in force on the invoice date. Hard-coding a rate would be an invention.",
+      "do_not": "GST-IN-HC-005 carries rate = REFER_TO_RATE_NOTIFICATION_IN_FORCE_ON_INVOICE_DATE. Resolve it at query time, or return INSUFFICIENT_EVIDENCE.",
+      "target_source": "https://cbic-gst.gov.in/ - CGST rate notification for services in force on the invoice date"
+    },
+    {
+      "gap": "State-specific clinical establishment tariff ceilings",
+      "status": "NOT_ATTEMPTED",
+      "reason": "Clinical Establishments Act 2010 is implemented state-wise with state-specific tariff schedules; no single national tariff ceiling exists. Time did not permit verified extraction.",
+      "do_not": "Never assert a national legal cap on hospital charges. Indian hospital charges are generally not capped by a central tariff law.",
+      "target_source": "State clinical establishments authority + India Code Act 10 of 2010"
+    }
+  ]
+}

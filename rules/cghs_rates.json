@@ -1,0 +1,38 @@
+[
+  {
+    "rule_id": "RULE-IND-ICU-001",
+    "authority": "CGHS",
+    "order_number": "F.No. S.11011/11/2021-CGHS(P)",
+    "title": "Statutory ICU Ceiling Tariff Limit",
+    "category": "Intensive Care",
+    "statutory_cap_rate": 8500.0,
+    "is_unbundling_prohibited": true,
+    "effective_date": "2021-06-01",
+    "gazette_citation": "Ministry of Health and Family Welfare Notification F.No. S.11011/11/2021-CGHS(P)",
+    "description": "ICU charge is an all-inclusive daily rate covering intensivist cover, monitoring, and nursing. Separate unbundling is not allowed."
+  },
+  {
+    "rule_id": "RULE-IND-ROOM-002",
+    "authority": "CGHS",
+    "order_number": "No. S.11045/36/2012-CGHS",
+    "title": "Private Ward Deluxe Accommodation Tariff Cap",
+    "category": "Accommodation",
+    "statutory_cap_rate": 4500.0,
+    "is_unbundling_prohibited": false,
+    "effective_date": "2014-11-01",
+    "gazette_citation": "Office Memorandum on Ward Entitlement & Room Ceilings, MoHFW",
+    "description": "Daily room rent cap for private ward admission in empaneled/regulated healthcare establishments."
+  },
+  {
+    "rule_id": "RULE-IND-DOC-003",
+    "authority": "CGHS",
+    "order_number": "F.No. 22-01/2020-CGHS",
+    "title": "Inpatient Specialist Consultation Visit Fee",
+    "category": "Professional Fees",
+    "statutory_cap_rate": 1000.0,
+    "is_unbundling_prohibited": false,
+    "effective_date": "2020-03-01",
+    "gazette_citation": "CGHS Rate Schedule for Routine In-Patient Specialist Rounds",
+    "description": "Cap on per-visit routine consultation charges for indoor patient care."
+  }
+]
