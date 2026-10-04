@@ -25,11 +25,11 @@ import {
 type ActiveTab = "upload" | "dashboard" | "findings" | "assistant" | "action-center" | "regulations";
 
 const SCAN_STEPS = [
-  "Reading document structure & OCR text coordinates...",
-  "Extracting hospital metadata, patient UHID & line items...",
-  "Verifying line item arithmetic and subtotal reconciliation...",
-  "Evaluating 37 codified Indian healthcare billing regulations (IRDAI / NPPA / GST)...",
-  "Compiling evidence citations, risk levels & explainable audit trail...",
+  "Reading your document...",
+  "Finding charges and totals...",
+  "Checking the calculations...",
+  "Comparing items with the selected rules...",
+  "Preparing your review...",
 ];
 
 export default function Home() {
@@ -39,7 +39,6 @@ export default function Home() {
   // Health & System state
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [healthLoading, setHealthLoading] = useState<boolean>(true);
-  const [healthError, setHealthError] = useState<string | null>(null);
 
   // Sample Bills & Rules
   const [sampleBills, setSampleBills] = useState<SampleBillMeta[]>([]);
@@ -62,14 +61,13 @@ export default function Home() {
 
   // Itemized Findings Filter
   const [findingFilter, setFindingFilter] = useState<string>("ALL");
-  const [selectedFinding, setSelectedFinding] = useState<AuditFinding | null>(null);
 
   // AI Assistant Chat State
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
-        "Hello! I am your explainable hospital bill audit assistant for India. I evaluate hospital charges strictly against codified statutory regulations (IRDAI non-payables, NPPA price caps, GST exemptions, and unbundling rules). Upload a bill, choose a demo case, or ask me any question about your medical bill.",
+        "Hi! Upload a bill, try a demo, or ask about a charge. I can explain the calculation and the rule behind each flagged item.",
     },
   ]);
   const [chatInput, setChatInput] = useState<string>("");
@@ -78,10 +76,8 @@ export default function Home() {
 
   // Dispute Letter State
   const [disputeLetter, setDisputeLetter] = useState<DisputeLetterResponse | null>(null);
-  const [recipientTitle, setRecipientTitle] = useState<string>(
-    "The Medical Superintendent / TPA Grievance Desk"
-  );
-  const [disputeNotes, setDisputeNotes] = useState<string>("");
+  const recipientTitle = "The Medical Superintendent / TPA Grievance Desk";
+  const disputeNotes = "";
   const [isGeneratingLetter, setIsGeneratingLetter] = useState<boolean>(false);
   const [letterCopied, setLetterCopied] = useState<boolean>(false);
 
@@ -92,8 +88,8 @@ export default function Home() {
       try {
         const h = await fetchHealth();
         setHealth(h);
-      } catch (err: unknown) {
-        setHealthError(err instanceof Error ? err.message : "Backend offline");
+      } catch {
+        setHealth(null);
       } finally {
         setHealthLoading(false);
       }
@@ -200,7 +196,7 @@ export default function Home() {
           content: response.reply,
         },
       ]);
-    } catch (err: unknown) {
+    } catch {
       setChatMessages([
         ...newHistory,
         {
@@ -273,9 +269,9 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-white">
+    <div className="app-shell min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-white">
       {/* Top Navigation */}
-      <header className="no-print border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-4 lg:px-8 py-3.5 transition-all">
+      <header className="app-header no-print border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-4 lg:px-8 py-3 transition-all">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center space-x-3.5">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 via-emerald-400 to-cyan-400 flex items-center justify-center font-bold text-slate-950 text-xl shadow-lg shadow-teal-500/20 ring-1 ring-white/20">
@@ -284,14 +280,14 @@ export default function Home() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-base font-extrabold tracking-tight text-white">
-                  Hospital Bill Auditor
+                  BillShield
                 </span>
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/30 font-mono">
-                  India v2.0
+                  India
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-medium">
-                AI-Assisted Statutory Compliance & Overcharging Detection Engine
+                Clear, rule-based hospital bill reviews
               </p>
             </div>
           </div>
@@ -300,24 +296,24 @@ export default function Home() {
           <div className="flex items-center gap-2.5">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-slate-300">Rules Active:</span>
+              <span className="text-slate-300">Rules</span>
               <span className="font-mono font-bold text-emerald-400">{rules.length || 37}</span>
             </div>
 
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs">
               {healthLoading ? (
-                <span className="text-slate-400">Connecting...</span>
+                <span className="text-slate-400">Checking status</span>
               ) : health?.status === "healthy" ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-teal-400"></span>
                   <span className="text-teal-300 font-medium">
-                    {health.providers?.llm?.is_demo ? "Rule AI (Offline Mode)" : "Gemini AI Connected"}
+                    {health.providers?.llm?.is_demo ? "Demo mode" : "Ready"}
                   </span>
                 </>
               ) : (
                 <>
                   <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                  <span className="text-amber-300 font-medium">API Connecting</span>
+                  <span className="text-amber-300 font-medium">Offline</span>
                 </>
               )}
             </div>
@@ -348,7 +344,7 @@ export default function Home() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            1. Bill Analyzer & Upload
+            Analyze
           </button>
 
           <button
@@ -362,7 +358,7 @@ export default function Home() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            2. Audit Dashboard
+            Summary
             {auditReport && (
               <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-500/20 text-red-300 font-mono">
                 {auditReport.findings_count}
@@ -381,7 +377,7 @@ export default function Home() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            3. Itemized Findings
+            Findings
           </button>
 
           <button
@@ -395,7 +391,7 @@ export default function Home() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
-            4. Explainable AI Assistant
+            Ask AI
           </button>
 
           <button
@@ -409,7 +405,7 @@ export default function Home() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            5. Patient Action Center
+            Actions
           </button>
 
           <button
@@ -423,13 +419,13 @@ export default function Home() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            6. Statutory Rules Catalog ({rules.length || 37})
+            Rules ({rules.length || 37})
           </button>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 lg:p-8 space-y-6">
         {/* Processing / Scanning Overlay */}
         {isAuditing && (
           <div className="p-8 rounded-2xl bg-slate-900 border border-teal-500/40 shadow-2xl relative overflow-hidden text-center space-y-4">
@@ -440,9 +436,7 @@ export default function Home() {
                   {Math.round(((scanStepIndex + 1) / SCAN_STEPS.length) * 100)}%
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white tracking-tight">
-                Auditing Medical Bill Against Indian Health Regulations
-              </h3>
+              <h3 className="text-xl font-bold text-white tracking-tight">Reviewing your bill</h3>
               <p className="text-sm text-teal-300 font-mono mt-1">
                 {SCAN_STEPS[scanStepIndex]}
               </p>
@@ -477,17 +471,17 @@ export default function Home() {
         {activeTab === "upload" && (
           <div className="space-y-8">
             {/* Hero / Value Proposition Banner */}
-            <div className="relative rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800/80 p-6 lg:p-8 border border-slate-800 shadow-xl overflow-hidden">
+            <div className="app-hero relative rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800/80 p-6 lg:p-9 border border-slate-800 shadow-xl overflow-hidden">
               <div className="max-w-3xl space-y-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/20">
                   <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-                  Grounded in IRDAI Master Circular, NPPA, GST Council & Clinical Establishment Acts
+                  Rule-based bill review
                 </div>
                 <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-white">
-                  Detect Overcharging, Math Errors & Prohibited Surcharges in Seconds
+                  Understand your hospital bill before you pay.
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Indian private hospitals routinely bill for items already included in room/ICU packages, apply 18% GST illegally on bed charges, charge duplicate tests, or markup consumables beyond NPPA caps. Upload your PDF or photo to verify every single rupee.
+                  Upload a bill or try a sample. We check calculations, duplicate charges, and selected pricing rules so you know what to ask about.
                 </p>
               </div>
             </div>
@@ -498,23 +492,25 @@ export default function Home() {
                 <div>
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <span className="text-amber-400">⚡</span>
-                    Instant Hackathon Demo Scenarios (No Upload Required)
+                    Try a sample bill
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Realistic synthetic hospital bills created with real-world Indian billing discrepancies.
+                    Explore the review with safe demo data.
                   </p>
                 </div>
                 <span className="text-[11px] font-mono text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-700">
-                  Zero Privacy Risk
+                  Demo data
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {sampleBills.map((sb) => (
-                  <div
+                  <button
+                    type="button"
                     key={sb.id}
                     onClick={() => handleSelectSampleBill(sb.id)}
-                    className="group cursor-pointer p-5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-teal-500/50 hover:bg-slate-800/60 transition-all shadow-md relative overflow-hidden"
+                    disabled={isAuditing}
+                    className="group w-full cursor-pointer rounded-xl border border-slate-800 bg-slate-900/90 p-5 text-left shadow-md transition-all hover:border-teal-500/50 hover:bg-slate-800/60 disabled:cursor-not-allowed disabled:opacity-60 relative overflow-hidden"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
@@ -538,16 +534,16 @@ export default function Home() {
                           key={i}
                           className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20"
                         >
-                          {dt}
+                          {dt.replace(/_/g, " ")}
                         </span>
                       ))}
                     </div>
 
                     <div className="mt-4 flex items-center justify-between text-xs text-teal-400 font-semibold group-hover:translate-x-0.5 transition-transform">
-                      <span>Audit This Bill</span>
+                      <span>Review sample</span>
                       <span>→</span>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -559,10 +555,10 @@ export default function Home() {
                   <svg className="w-5 h-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  Upload Hospital Bill (PDF, JPG, PNG)
+                  Upload a bill
                 </h3>
                 <p className="text-xs text-slate-400 mt-1">
-                  Upload an itemized hospital bill or interim invoice. Files are processed in-memory with strict privacy safeguards.
+                  Choose an itemized bill or interim invoice to begin your review.
                 </p>
               </div>
 
@@ -597,9 +593,9 @@ export default function Home() {
                   ) : (
                     <div>
                       <p className="text-sm font-semibold text-slate-200">
-                        Drop your hospital bill here, or <span className="text-teal-400 underline">browse</span>
+                        Drop a bill here or <span className="text-teal-400 underline">browse</span>
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">Supports PDF (text/scanned), PNG, JPG up to 25 MB</p>
+                      <p className="text-xs text-slate-500 mt-1">PDF, JPG, or PNG · up to 25 MB</p>
                     </div>
                   )}
                 </div>
@@ -608,7 +604,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                      State / Jurisdiction
+                      Your state
                     </label>
                     <select
                       value={stateJurisdiction}
@@ -625,7 +621,7 @@ export default function Home() {
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                      Target Regulatory Benchmark / Scheme
+                      Review scheme
                     </label>
                     <select
                       value={billingScheme}
@@ -639,16 +635,14 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-xs text-slate-500">
-                    * Audits are strictly analytical and cite exact official circulars.
-                  </span>
+                <div className="upload-actions flex items-center justify-between gap-4 pt-2">
+                  <span className="text-xs text-slate-500">Your results will include the rules used for review.</span>
                   <button
                     type="submit"
                     disabled={!selectedFile || isAuditing}
                     className="px-6 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-teal-500/20 disabled:opacity-40"
                   >
-                    Upload & Run Regulatory Audit
+                    Review bill
                   </button>
                 </div>
               </form>
@@ -670,13 +664,13 @@ export default function Home() {
                 </div>
                 <h3 className="text-base font-bold text-white">No Audit Report Generated Yet</h3>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Upload a hospital bill or select one of the instant hackathon demo bills to see the full financial breakdown.
+                  Upload a bill or choose a sample to see the review summary.
                 </p>
                 <button
                   onClick={handleRunDemoAudit}
                   className="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs transition"
                 >
-                  Load Demo Audit
+                  Try a sample
                 </button>
               </div>
             ) : (
@@ -709,7 +703,7 @@ export default function Home() {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      Generate Dispute Letter
+                      Create letter
                     </button>
                     <button
                       onClick={() => setActiveTab("assistant")}
@@ -718,7 +712,7 @@ export default function Home() {
                       <svg className="w-4 h-4 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                       </svg>
-                      Ask AI Agent
+                      Ask AI
                     </button>
                   </div>
                 </div>
@@ -727,17 +721,17 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* 1. Total Billed */}
                   <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-                    <span className="text-xs font-semibold text-slate-400">Total Billed by Hospital</span>
+                    <span className="text-xs font-semibold text-slate-400">Total billed</span>
                     <div className="text-2xl font-black text-white font-mono">
                       ₹{auditReport.total_billed.toLocaleString("en-IN")}
                     </div>
-                    <p className="text-[11px] text-slate-500">Gross invoice total including taxes & surcharges</p>
+                    <p className="text-[11px] text-slate-500">Invoice total, including taxes</p>
                   </div>
 
                   {/* 2. Verified Arithmetic Discrepancies */}
                   <div className="p-5 rounded-2xl bg-slate-900 border border-amber-500/20 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-amber-300">Verified Arithmetic Discrepancies</span>
+                      <span className="text-xs font-semibold text-amber-300">Calculation differences</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-mono font-bold">
                         Calculated
                       </span>
@@ -753,7 +747,7 @@ export default function Home() {
                   {/* 3. Suspicious / Unbundled Charges */}
                   <div className="p-5 rounded-2xl bg-slate-900 border border-red-500/20 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-red-300">Suspicious Surcharges</span>
+                      <span className="text-xs font-semibold text-red-300">Charges to review</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 font-mono font-bold">
                         Unbundled
                       </span>
@@ -762,14 +756,14 @@ export default function Home() {
                       ₹{auditReport.suspicious_charges_total.toLocaleString("en-IN")}
                     </div>
                     <p className="text-[11px] text-slate-400">
-                      ICU unbundling, illegal GST, duplicate tests & arbitrary fees
+                      Duplicate, bundled, or rate-related items
                     </p>
                   </div>
 
                   {/* 4. Total Potential Review Amount */}
                   <div className="p-5 rounded-2xl bg-gradient-to-br from-teal-950/40 via-slate-900 to-slate-900 border border-teal-500/40 space-y-2 shadow-lg shadow-teal-950/50">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-teal-300">Potential Review Amount</span>
+                      <span className="text-xs font-semibold text-teal-300">Amount to review</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 font-bold font-mono">
                         {auditReport.findings_count} Items
                       </span>
@@ -778,7 +772,7 @@ export default function Home() {
                       ₹{auditReport.potential_savings.toLocaleString("en-IN")}
                     </div>
                     <p className="text-[11px] text-teal-200/70">
-                      Items requiring clarification before payment or insurance sign-off
+                      Items worth clarifying with the billing desk
                     </p>
                   </div>
                 </div>
@@ -789,10 +783,10 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
-                    <span className="font-semibold text-slate-200">How these figures are derived: </span>
+                    <span className="font-semibold text-slate-200">About this total: </span>
                     Potential Review Amount (₹{auditReport.potential_savings.toLocaleString("en-IN")}) = Verified Arithmetic Errors (₹{auditReport.arithmetic_error_total.toLocaleString("en-IN")}) + Suspicious Surcharges & Unbundled Items (₹{auditReport.suspicious_charges_total.toLocaleString("en-IN")}) + Disallowed Items (₹{auditReport.disallowed_items_total.toLocaleString("en-IN")}).
                     <p className="text-[11px] text-slate-500 mt-1">
-                      <strong>Ethical Audit Boundary:</strong> The platform flags items for review against verified statutory rules and arithmetic logic. It does not make legal accusations of criminal fraud.
+                      Results highlight items to clarify; they are not legal conclusions.
                     </p>
                   </div>
                 </div>
@@ -802,7 +796,7 @@ export default function Home() {
                   {/* Left 2 Cols: Findings Table Preview */}
                   <div className="lg:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-sm text-white">Flagged Line Items Overview</h4>
+                      <h4 className="font-bold text-sm text-white">Items to review</h4>
                       <button
                         onClick={() => setActiveTab("findings")}
                         className="text-xs text-teal-400 hover:text-teal-300 font-semibold"
@@ -853,7 +847,7 @@ export default function Home() {
 
                   {/* Right Col: Statutory Severity Distribution */}
                   <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-                    <h4 className="font-bold text-sm text-white">Risk & Severity Profile</h4>
+                    <h4 className="font-bold text-sm text-white">Review priority</h4>
 
                     <div className="space-y-3 text-xs">
                       <div>
@@ -927,9 +921,9 @@ export default function Home() {
                     </div>
 
                     <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-400 space-y-1 mt-4">
-                      <div className="font-semibold text-slate-300">Auditor Recommendation:</div>
+                      <div className="font-semibold text-slate-300">Suggested next step</div>
                       <p>
-                        Present findings to the hospital billing desk prior to final discharge clearance. Request an itemized ledger reconciliation under Section 5 of the Clinical Establishments Act.
+                        Ask the billing desk for an itemized ledger and a clear explanation of the highlighted items.
                       </p>
                     </div>
                   </div>
@@ -1089,10 +1083,10 @@ export default function Home() {
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-teal-400"></span>
-                  Explainable Healthcare Billing Assistant
+                  Bill review assistant
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Ask questions about any line item, statutory rule, or how to speak to the hospital billing desk.
+                  Ask about a charge, a rule, or what to ask the billing desk.
                 </p>
               </div>
 
@@ -1107,11 +1101,9 @@ export default function Home() {
             <div className="flex flex-wrap gap-2 text-xs">
               <span className="text-slate-500 self-center text-[11px]">Try asking:</span>
               {[
-                "Why was ICU nursing flagged as an unbundled charge?",
-                "Is 18% GST legally applicable on hospital rooms in India?",
-                "What does IRDAI say about paying for PPE kits and gloves?",
-                "How do I dispute a math error with the hospital accountant?",
-                "Can a hospital charge for both OT package and disposable drapes?",
+                "Why was this charge flagged?",
+                "Can you explain the GST check?",
+                "What should I ask the billing desk?",
               ].map((suggestion, idx) => (
                 <button
                   key={idx}
@@ -1143,7 +1135,7 @@ export default function Home() {
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-teal-400 uppercase tracking-wider mb-1.5">
                           <span>AI Auditor</span>
                           <span>•</span>
-                          <span>Statutory Reasoning</span>
+                          <span>Bill review</span>
                         </div>
                       )}
                       <div className="whitespace-pre-line">{msg.content}</div>
@@ -1155,7 +1147,7 @@ export default function Home() {
                   <div className="flex justify-start">
                     <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs text-slate-400 flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-teal-400 animate-ping"></div>
-                      <span>Reviewing statutory legal databases & mathematical ledger...</span>
+                      <span>Reviewing your question...</span>
                     </div>
                   </div>
                 )}
@@ -1174,7 +1166,7 @@ export default function Home() {
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Ask a question about this bill or medical billing regulations..."
+                  placeholder="Ask about a charge or rule..."
                   className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
                 />
                 <button
@@ -1196,12 +1188,12 @@ export default function Home() {
           <div className="space-y-6">
             {!auditReport ? (
               <div className="p-12 text-center rounded-2xl bg-slate-900 border border-slate-800">
-                <p className="text-sm text-slate-400">Run an audit first to generate your formal dispute dossier.</p>
+                <p className="text-sm text-slate-400">Run a review first to create a clarification letter.</p>
                 <button
                   onClick={handleRunDemoAudit}
                   className="mt-3 px-4 py-2 rounded-lg bg-teal-600 text-white text-xs font-semibold"
                 >
-                  Load Demo Audit
+                  Try a sample
                 </button>
               </div>
             ) : (
@@ -1212,7 +1204,7 @@ export default function Home() {
                   <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
                     <h3 className="font-bold text-sm text-white flex items-center gap-2">
                       <span className="text-teal-400">📋</span>
-                      Patient Action Checklist
+                      Questions to ask
                     </h3>
                     <div className="space-y-3 text-xs text-slate-300">
                       <div className="flex items-start gap-2.5">
@@ -1236,7 +1228,7 @@ export default function Home() {
 
                   {/* Grievance Escalation Steps */}
                   <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-                    <h3 className="font-bold text-sm text-white">Escalation Hierarchy</h3>
+                    <h3 className="font-bold text-sm text-white">If you need more help</h3>
                     <ol className="list-decimal list-inside text-xs text-slate-400 space-y-2 leading-relaxed">
                       <li>
                         <strong className="text-slate-200">Hospital Grievance Cell:</strong> Submit formal written dispute letter.
@@ -1259,7 +1251,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-sm text-white flex items-center gap-2">
                       <span className="text-teal-400">📄</span>
-                      Formal Dispute & Clarification Letter
+                      Clarification letter
                     </h3>
 
                     <div className="flex items-center gap-2">
@@ -1287,14 +1279,14 @@ export default function Home() {
                   {!disputeLetter ? (
                     <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-3">
                       <p className="text-xs text-slate-400">
-                        Generate a formal dispute letter formatted with your hospital details, patient UHID, and itemized legal references.
+                        Create a concise letter with your bill details and highlighted items.
                       </p>
                       <button
                         onClick={handleGenerateLetter}
                         disabled={isGeneratingLetter}
                         className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs transition"
                       >
-                        {isGeneratingLetter ? "Generating Letter..." : "Generate Dispute Letter Now"}
+                        {isGeneratingLetter ? "Creating letter..." : "Create letter"}
                       </button>
                     </div>
                   ) : (
@@ -1321,10 +1313,10 @@ export default function Home() {
                 <div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     <span className="text-teal-400">🏛️</span>
-                    Codified Indian Healthcare Billing Rules Catalog
+                    Billing rules
                   </h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    Normalized statutory rules from IRDAI, NPPA, GST Council, CGHS, and State Clinical Establishments Acts.
+                    The rules used to guide this review.
                   </p>
                 </div>
 
@@ -1333,7 +1325,7 @@ export default function Home() {
                     type="text"
                     value={ruleSearchQuery}
                     onChange={(e) => setRuleSearchQuery(e.target.value)}
-                    placeholder="Search rules (e.g. ICU, PPE, GST, Stent)..."
+                    placeholder="Search rules..."
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
                   />
                 </div>
@@ -1411,10 +1403,10 @@ export default function Home() {
       {/* Footer */}
       <footer className="no-print mt-auto border-t border-slate-800/80 bg-slate-900/60 py-6 px-4 text-center text-xs text-slate-500 space-y-1">
         <p>
-          Hospital Bill Auditor (India) — Grounded in Codified Indian Healthcare Regulations & Transparent Arithmetic Reconciliation.
+          BillShield helps you review hospital bills with clearer calculations and rule references.
         </p>
         <p className="text-[11px] text-slate-600">
-          This system provides informational audit findings for patient empowerment. It does not provide legal advice or make criminal accusations against healthcare providers.
+          Results are informational and do not replace legal or medical advice.
         </p>
       </footer>
     </div>

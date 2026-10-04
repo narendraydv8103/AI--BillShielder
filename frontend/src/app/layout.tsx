@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full bg-slate-950 text-slate-100 antialiased">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-teal-500 selection:text-white`}>
+    <html lang="en" className="h-full antialiased">
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans min-h-screen flex flex-col selection:bg-teal-500 selection:text-white`}>
         {children}
       </body>
     </html>

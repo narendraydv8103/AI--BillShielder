@@ -1,15 +1,133 @@
 @import "tailwindcss";
 
 :root {
-  --background: #060b13;
-  --foreground: #f1f5f9;
+  --background: #f6f8fc;
+  --foreground: #172033;
 }
 
 body {
-  background-color: #060b13;
-  color: #f1f5f9;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+}
+
+.app-shell {
+  background:
+    radial-gradient(circle at top right, rgb(204 251 241 / 0.52), transparent 30rem),
+    linear-gradient(135deg, #f8fafc 0%, #eff6ff 52%, #f0fdfa 100%);
+  color: #172033;
+}
+
+.app-header {
+  background: rgb(255 255 255 / 0.9) !important;
+  box-shadow: 0 1px 0 rgb(148 163 184 / 0.15), 0 10px 28px rgb(15 23 42 / 0.05);
+}
+
+.app-hero {
+  background:
+    radial-gradient(circle at 92% 15%, rgb(45 212 191 / 0.22), transparent 18rem),
+    linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%) !important;
+}
+
+/* Re-map the original dark utility palette to clear, readable surfaces. */
+.app-shell .bg-slate-950,
+.app-shell .bg-slate-950\/40,
+.app-shell .bg-slate-950\/60,
+.app-shell .bg-slate-950\/80 {
+  background-color: #f6f8fc;
+}
+
+.app-shell .bg-slate-900,
+.app-shell .bg-slate-900\/60,
+.app-shell .bg-slate-900\/90 {
+  background-color: #ffffff;
+}
+
+.app-shell .bg-slate-800,
+.app-shell .bg-slate-800\/50,
+.app-shell .bg-slate-800\/80 {
+  background-color: #eef2f7;
+}
+
+.app-shell .hover\:bg-slate-700:hover,
+.app-shell .hover\:bg-slate-800:hover,
+.app-shell .hover\:bg-slate-800\/50:hover,
+.app-shell .hover\:bg-slate-800\/60:hover,
+.app-shell .hover\:bg-slate-950\/70:hover {
+  background-color: #e6edf5;
+}
+
+.app-shell .from-slate-900 {
+  --tw-gradient-from: #ffffff var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
+}
+
+.app-shell .via-slate-900 {
+  --tw-gradient-via: #f8fafc var(--tw-gradient-via-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to);
+}
+
+.app-shell .to-slate-800\/80 {
+  --tw-gradient-to: rgb(238 242 247 / 0.8) var(--tw-gradient-to-position);
+}
+
+.app-shell .text-white,
+.app-shell .text-slate-100,
+.app-shell .text-slate-200 {
+  color: #172033;
+}
+
+.app-shell .text-slate-300 {
+  color: #334155;
+}
+
+.app-shell .text-slate-400 {
+  color: #526177;
+}
+
+.app-shell .text-slate-500,
+.app-shell .text-slate-600 {
+  color: #64748b;
+}
+
+.app-shell .text-xs {
+  font-size: 0.8125rem;
+  line-height: 1.35rem;
+}
+
+.app-shell .border-slate-800,
+.app-shell .border-slate-800\/60,
+.app-shell .border-slate-800\/80,
+.app-shell .border-slate-700,
+.app-shell .border-slate-700\/60 {
+  border-color: #d8e1ec;
+}
+
+.app-shell button.text-white {
+  color: #ffffff;
+}
+
+.app-shell input.text-white,
+.app-shell select.text-white {
+  color: #172033;
+}
+
+.app-shell input::placeholder {
+  color: #718096;
+}
+
+.app-shell button,
+.app-shell input,
+.app-shell select {
+  font: inherit;
+}
+
+.app-shell button:focus-visible,
+.app-shell input:focus-visible,
+.app-shell select:focus-visible {
+  outline: 3px solid rgb(20 184 166 / 0.3);
+  outline-offset: 2px;
 }
 
 /* Custom scrollbar */
@@ -18,14 +136,25 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b1320;
+  background: #e8eef5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #aebdce;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #8191a5;
+}
+
+@media (max-width: 640px) {
+  .upload-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .upload-actions button {
+    width: 100%;
+  }
 }
 
 @media print {
