@@ -24,12 +24,13 @@ class Settings(BaseSettings):
 
     # API Settings
     BACKEND_HOST: str = "0.0.0.0"
-    BACKEND_PORT: int = 8000
+    BACKEND_PORT: int = int(os.environ.get("PORT", 8000))
     API_V1_PREFIX: str = "/api/v1"
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:8000",
+        "https://ai-billshielder.embarko.app",
     ]
 
     # DEMO MODE
@@ -39,7 +40,9 @@ class Settings(BaseSettings):
     # Database Settings
     # Default to SQLite for zero-friction local development/demo if PostgreSQL is not active
     DATABASE_URL: str = Field(
-        default="sqlite+aiosqlite:///./database/hospital_auditor.db",
+        default=f"sqlite+aiosqlite:///{os.environ.get('DATA_DIR')}/hospital_auditor.db"
+        if os.environ.get("DATA_DIR")
+        else "sqlite+aiosqlite:///./database/hospital_auditor.db",
         description="Async database connection string"
     )
     ENABLE_PGVECTOR: bool = False

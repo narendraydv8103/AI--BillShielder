@@ -86,3 +86,11 @@ app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 # Also expose top-level /health alias for container health checkers
 from backend.app.api.v1.health import router as health_router
 app.include_router(health_router)
+
+
+if __name__ == "__main__":
+    import os
+    import uvicorn
+    port = int(os.environ.get("PORT", settings.BACKEND_PORT))
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=port)
+
