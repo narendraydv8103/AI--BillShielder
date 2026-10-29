@@ -9,6 +9,8 @@ import {
   Sparkles,
   ArrowRight,
   ShieldAlert,
+  Info,
+  RefreshCw,
 } from "lucide-react";
 import {
   fetchSampleBills,
@@ -18,6 +20,9 @@ import {
   runDemoAudit,
   SampleBillMeta,
   AuditReportResponse,
+  BackendUnavailableError,
+  ExtractionError,
+  ValidationError,
 } from "@/lib/api";
 import { fmtINR } from "@/lib/demo-audit";
 
@@ -28,11 +33,11 @@ interface BillUploadModalProps {
 }
 
 const SCAN_STEPS = [
-  "Reading your document and extracting line items...",
-  "Validating billing math and arithmetic calculations...",
-  "Cross-referencing statutory rate caps (CGHS/NPPA/State)...",
-  "Checking for unbundled ICU fees, duplicates & non-payables...",
-  "Compiling evidence-backed patient dispute dossier...",
+  "Uploading and parsing bill document...",
+  "Validating line-item math and table structure...",
+  "Cross-referencing reference benchmarks (CGHS/NPPA/IRDAI)...",
+  "Checking for unbundled ICU overheads, duplicate services & tax flags...",
+  "Compiling evidence-backed itemized audit dossier...",
 ];
 
 export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUploadModalProps) {
@@ -45,10 +50,13 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
 
   // Scanning progress state
   const [isAuditing, setIsAuditing] = useState(false);
+  const [auditMode, setAuditMode] = useState<"real" | "demo" | "sample">("real");
   const [scanStepIndex, setScanStepIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorCategory, setErrorCategory] = useState<"backend" | "extraction" | "validation" | "general" | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Fetch sample bills catalog
   useEffect(() => {
@@ -59,7 +67,6 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
           setSampleBills(bills);
         })
         .catch(() => {
-          // Fallback if backend offline
           setSampleBills([]);
         })
         .finally(() => {
@@ -70,52 +77,87 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
 
   if (!isOpen) return null;
 
-  const runScanningSimulation = async (auditFn: () => Promise<AuditReportResponse>) => {
+  const handleCancelAudit = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsAuditing(false);
+    setErrorMsg("Audit cancelled by user.");
+    setErrorCategory("general");
+  };
+
+  const runScanning = async (
+    mode: "real" | "demo" | "sample",
+    auditFn: (signal: AbortSignal) => Promise<AuditReportResponse>
+  ) => {
     setIsAuditing(true);
+    setAuditMode(mode);
     setErrorMsg(null);
+    setErrorCategory(null);
     setScanStepIndex(0);
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     const stepInterval = setInterval(() => {
       setScanStepIndex((prev) => (prev < SCAN_STEPS.length - 1 ? prev + 1 : prev));
-    }, 650);
+    }, 600);
 
     try {
-      const report = await auditFn();
+      const report = await auditFn(controller.signal);
       clearInterval(stepInterval);
       setScanStepIndex(SCAN_STEPS.length - 1);
       setTimeout(() => {
         setIsAuditing(false);
         onAuditComplete(report);
         onClose();
-      }, 500);
+      }, 400);
     } catch (err: any) {
       clearInterval(stepInterval);
       setIsAuditing(false);
-      setErrorMsg(err.message || "Failed to analyze bill. Please check backend connection.");
+
+      if (err instanceof BackendUnavailableError) {
+        setErrorCategory("backend");
+        setErrorMsg(err.message);
+      } else if (err instanceof ExtractionError) {
+        setErrorCategory("extraction");
+        setErrorMsg(err.message);
+      } else if (err instanceof ValidationError) {
+        setErrorCategory("validation");
+        setErrorMsg(err.message);
+      } else {
+        setErrorCategory("general");
+        setErrorMsg(err.message || "Failed to analyze bill. Please check backend connection.");
+      }
     }
   };
 
   const handleFileUpload = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
-      setErrorMsg("Please select a bill PDF or image file.");
+      setErrorCategory("validation");
+      setErrorMsg("Please select a valid itemized bill PDF or image file first.");
       return;
     }
-    runScanningSimulation(async () => {
-      return await uploadAndAnalyzeFile(selectedFile, stateJurisdiction, billingScheme);
+    runScanning("real", async (signal) => {
+      return await uploadAndAnalyzeFile(selectedFile, stateJurisdiction, billingScheme, signal);
     });
   };
 
   const handleSelectSampleBill = (billId: string) => {
-    runScanningSimulation(async () => {
-      const billData = await fetchSampleBillById(billId);
-      return await analyzeBill(billData);
+    runScanning("sample", async (signal) => {
+      const billData = await fetchSampleBillById(billId, signal);
+      const report = await analyzeBill(billData, signal);
+      report.is_demo = true;
+      report.audit_source = "synthetic_demo";
+      report.source_filename = `${billId}.json (Catalog Sample)`;
+      return report;
     });
   };
 
   const handleQuickDemoAudit = () => {
-    runScanningSimulation(async () => {
-      return await runDemoAudit();
+    runScanning("demo", async (signal) => {
+      return await runDemoAudit(signal);
     });
   };
 
@@ -127,6 +169,7 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
           <button
             onClick={onClose}
             className="absolute right-5 top-5 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close modal"
           >
             <X className="size-5" />
           </button>
@@ -136,14 +179,13 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <Sparkles className="size-3.5" />
-            Deterministic Statutory Auditor
+            Deterministic Rule Engine
           </span>
           <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             Audit Hospital Bill
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Upload your hospital bill or select a realistic case to detect rate cap violations,
-            unbundled ICU overheads, and duplicate charges.
+            Upload your hospital bill for a genuine automated audit, or explore pre-configured synthetic cases.
           </p>
         </div>
 
@@ -154,7 +196,11 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
               <Loader2 className="size-10 animate-spin" />
             </div>
             <h3 className="mt-6 text-lg font-bold text-foreground">
-              Scanning Bill with Rule Engine
+              {auditMode === "real"
+                ? "Auditing Uploaded Bill with Rule Engine"
+                : auditMode === "demo"
+                ? "Running 1-Click Synthetic ICU Demo"
+                : "Auditing Sample Case"}
             </h3>
             <p className="mt-1 text-sm font-medium text-primary">
               {SCAN_STEPS[scanStepIndex]}
@@ -171,9 +217,16 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
               </div>
               <div className="mt-3 flex justify-between text-xs text-muted-foreground">
                 <span>Step {scanStepIndex + 1} of {SCAN_STEPS.length}</span>
-                <span>37 Statutory Rules</span>
+                <span>10 Checks Active (37 Rules Catalogued)</span>
               </div>
             </div>
+
+            <button
+              onClick={handleCancelAudit}
+              className="mt-6 text-xs text-muted-foreground underline hover:text-foreground"
+            >
+              Cancel audit
+            </button>
           </div>
         ) : (
           <>
@@ -181,32 +234,61 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
             <div className="mt-6 flex border-b border-border">
               <button
                 type="button"
-                onClick={() => setActiveTab("upload")}
+                onClick={() => {
+                  setActiveTab("upload");
+                  setErrorMsg(null);
+                }}
                 className={`flex-1 border-b-2 py-3 text-center text-sm font-semibold transition-colors ${
                   activeTab === "upload"
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Upload Bill File (PDF / Image)
+                Upload Real Bill (PDF / Image)
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("samples")}
+                onClick={() => {
+                  setActiveTab("samples");
+                  setErrorMsg(null);
+                }}
                 className={`flex-1 border-b-2 py-3 text-center text-sm font-semibold transition-colors ${
                   activeTab === "samples"
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Pre-configured Hospital Bills
+                Explore Synthetic Samples
               </button>
             </div>
 
+            {/* Error Banner with Categorized Guidance */}
             {errorMsg && (
-              <div className="mt-4 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-destructive">
-                <AlertCircle className="size-4 shrink-0 mt-0.5" />
-                <span>{errorMsg}</span>
+              <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-xs text-destructive">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="size-4 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold">
+                      {errorCategory === "backend"
+                        ? "Backend Connection Error"
+                        : errorCategory === "extraction"
+                        ? "Document Extraction Failed"
+                        : errorCategory === "validation"
+                        ? "Validation Error"
+                        : "Audit Request Failed"}
+                    </p>
+                    <p className="leading-relaxed">{errorMsg}</p>
+                    {errorCategory === "backend" && (
+                      <p className="pt-1 text-muted-foreground">
+                        Tip: Make sure the FastAPI backend is running via{" "}
+                        <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px] text-foreground">
+                          python -m uvicorn backend.main:app --port 8000
+                        </code>
+                        . Alternatively, test the offline workflow with the 1-Click Quick Demo below.
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -231,6 +313,7 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
                       if (e.target.files && e.target.files[0]) {
                         setSelectedFile(e.target.files[0]);
                         setErrorMsg(null);
+                        setErrorCategory(null);
                       }
                     }}
                   />
@@ -247,7 +330,7 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
                         {selectedFile.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {(selectedFile.size / 1024).toFixed(1)} KB • Ready for audit
+                        {(selectedFile.size / 1024).toFixed(1)} KB • Ready for real audit
                       </p>
                     </div>
                   ) : (
@@ -262,39 +345,57 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
                   )}
                 </div>
 
-                {/* State Jurisdiction & Scheme */}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">
-                      State Jurisdiction
-                    </label>
-                    <select
-                      value={stateJurisdiction}
-                      onChange={(e) => setStateJurisdiction(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="Delhi">Delhi (Delhi Health Dept / CGHS)</option>
-                      <option value="Maharashtra">Maharashtra (State Ceiling)</option>
-                      <option value="Karnataka">Karnataka (KPME Rules)</option>
-                      <option value="Tamil Nadu">Tamil Nadu (TN Govt Orders)</option>
-                      <option value="All India">All India / Central Guidelines</option>
-                    </select>
+                {/* State Jurisdiction & Scheme Dropdowns with Honest Transparency */}
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          State Jurisdiction
+                        </label>
+                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                          Reference Only
+                        </span>
+                      </div>
+                      <select
+                        value={stateJurisdiction}
+                        onChange={(e) => setStateJurisdiction(e.target.value)}
+                        className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="Delhi">Delhi (Delhi Health Dept / CGHS)</option>
+                        <option value="Maharashtra">Maharashtra (State Ceilings)</option>
+                        <option value="Karnataka">Karnataka (KPME Rules)</option>
+                        <option value="Tamil Nadu">Tamil Nadu (TN Govt Orders)</option>
+                        <option value="All India">All India / Central Guidelines</option>
+                      </select>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          Rate Benchmark / Scheme
+                        </label>
+                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                          National Caps Active
+                        </span>
+                      </div>
+                      <select
+                        value={billingScheme}
+                        onChange={(e) => setBillingScheme(e.target.value)}
+                        className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="CGHS">CGHS Reference Rates (Central)</option>
+                        <option value="PMJAY">PM-JAY Benefit Packages</option>
+                        <option value="GIPSA">GIPSA / Private TPA Tariffs</option>
+                        <option value="Statutory">Standard Statutory Caps (NPPA/ICU)</option>
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">
-                      Rate Benchmark / Scheme
-                    </label>
-                    <select
-                      value={billingScheme}
-                      onChange={(e) => setBillingScheme(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="CGHS">CGHS Permissible Rates (Standard)</option>
-                      <option value="PMJAY">PM-JAY Health Packages</option>
-                      <option value="GIPSA">GIPSA / Private TPA Tariff</option>
-                      <option value="Statutory">Standard Statutory Ceilings (NPPA/ICU)</option>
-                    </select>
-                  </div>
+                  <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <Info className="size-3.5 shrink-0 text-primary" />
+                    <span>
+                      The active engine evaluates verified national benchmarks (CGHS/NPPA/IRDAI). State-specific clinical tariffs and custom scheme rules are catalogued and scheduled for dynamic filtering in an upcoming update.
+                    </span>
+                  </p>
                 </div>
 
                 {/* Submit Buttons */}
@@ -305,7 +406,7 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
                     className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-navy-deep disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <FileText className="size-4" />
-                    Audit This Bill
+                    Audit Uploaded Bill
                   </button>
                   <button
                     type="button"
@@ -322,6 +423,9 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
             {/* Pre-configured Samples Tab */}
             {activeTab === "samples" && (
               <div className="mt-5 space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Select a realistic pre-configured hospital case to inspect deterministic audit findings:
+                </p>
                 {isLoadingSamples ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="size-6 animate-spin text-primary" />
@@ -386,4 +490,3 @@ export function BillUploadModal({ isOpen, onClose, onAuditComplete }: BillUpload
     </div>
   );
 }
-

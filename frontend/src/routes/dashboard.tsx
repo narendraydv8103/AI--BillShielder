@@ -209,7 +209,7 @@ function Dashboard() {
     try {
       const response = await askAIChat({
         message: text,
-        bill: report?.normalized_bill,
+        bill: report?.normalized_bill ?? null,
         findings: report?.findings || [],
         history: newHistory,
       });
@@ -327,22 +327,22 @@ function Dashboard() {
       sub: "Gross hospital charge",
     },
     {
-      label: "Flagged Overcharges",
+      label: "Review Discrepancies",
       value: report ? fmtINR(report.potential_savings) : "₹0",
       tone: "text-flagged",
-      sub: `${sharePercent} of total bill`,
+      sub: `${sharePercent} of total bill under review`,
     },
     {
-      label: "Statutory Permissible",
+      label: "Benchmark Reference",
       value: report ? fmtINR(report.total_permissible) : "₹0",
       tone: "text-emerald-600",
-      sub: "Legal rate cap limit",
+      sub: "Reference benchmark total",
     },
     {
-      label: "Flagged Discrepancies",
+      label: "Flagged Line Items",
       value: report ? String(report.findings_count) : "0",
       tone: "text-primary",
-      sub: "Violations identified",
+      sub: "Discrepancies identified",
     },
   ];
 
@@ -369,7 +369,7 @@ function Dashboard() {
             </span>
           </div>
           <p className="mt-1 text-[11px] text-primary-foreground/60">
-            37 statutory rules & benchmark caps active
+            10 checks active (37 rules catalogued)
           </p>
         </div>
 
@@ -443,7 +443,7 @@ function Dashboard() {
               className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-navy-deep"
             >
               <UploadCloud className="size-4" />
-              Upload New Bill
+              Upload Real Bill
             </button>
             <button
               onClick={() => {
@@ -457,6 +457,46 @@ function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* Audit Provenance Banner */}
+        {report && (
+          <div
+            className={`mt-4 rounded-xl border p-4 text-xs ${
+              report.is_demo
+                ? "border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200"
+                : "border-emerald-500/40 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200"
+            }`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${
+                    report.is_demo
+                      ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30"
+                      : "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30"
+                  }`}
+                >
+                  {report.is_demo
+                    ? "DEMO DATA — NOT A REAL BILL AUDIT"
+                    : "VERIFIED BACKEND AUDIT"}
+                </span>
+                <span className="font-semibold text-foreground">
+                  Source: {report.source_filename || (report.is_demo ? "Synthetic Hospital Fixture" : "Uploaded Inpatient Document")}
+                </span>
+              </div>
+              <span className="text-muted-foreground text-[11px]">
+                {report.is_demo
+                  ? "Synthetic test case for educational demonstration"
+                  : "Deterministic Rule Engine evaluation complete"}
+              </span>
+            </div>
+            {report.is_demo && (
+              <p className="mt-2 text-muted-foreground leading-relaxed">
+                This report was loaded from synthetic test fixtures to demonstrate the 10 automated audit checks. It does not represent an actual patient bill or verified financial liability.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* 1. DASHBOARD VIEW */}
         {activeNav === "Dashboard" && (
@@ -508,7 +548,7 @@ function Dashboard() {
                       <tr className="border-b border-border bg-muted/50 text-muted-foreground">
                         <th className="px-3 py-2.5 font-semibold">Flagged Item</th>
                         <th className="px-3 py-2.5 font-semibold">Billed</th>
-                        <th className="px-3 py-2.5 font-semibold">Statutory Excess</th>
+                        <th className="px-3 py-2.5 font-semibold">Review Discrepancy</th>
                         <th className="px-3 py-2.5 text-right font-semibold">
                           Severity
                         </th>
@@ -700,7 +740,7 @@ function Dashboard() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Refund Due</p>
+                      <p className="text-muted-foreground">Discrepancy</p>
                       <p className="font-bold text-flagged">
                         {fmtINR(f.excess_amount)}
                       </p>
@@ -981,7 +1021,7 @@ function Dashboard() {
                       )}
                       {rule.rate_ceiling != null && (
                         <p className="text-emerald-600 font-semibold">
-                          Permissible Rate Cap: {fmtINR(rule.rate_ceiling)}
+                          Reference Benchmark Ceiling: {fmtINR(rule.rate_ceiling)}
                         </p>
                       )}
                     </div>
@@ -1022,13 +1062,13 @@ function Dashboard() {
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Permissible Cap</p>
+                <p className="text-muted-foreground">Benchmark Ceiling</p>
                 <p className="mt-1 font-bold text-emerald-600">
                   {fmtINR(selectedFinding.permissible_amount)}
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Disputed Excess</p>
+                <p className="text-muted-foreground">Review Discrepancy</p>
                 <p className="mt-1 font-bold text-flagged">
                   {fmtINR(selectedFinding.excess_amount)}
                 </p>
@@ -1037,7 +1077,7 @@ function Dashboard() {
 
             <div className="mt-4 space-y-3 text-xs leading-relaxed">
               <div>
-                <strong className="text-foreground">Official Legal Citation:</strong>
+                <strong className="text-foreground">Regulatory Authority Reference:</strong>
                 <p className="mt-0.5 text-muted-foreground bg-muted/30 p-2.5 rounded-lg border border-border">
                   {selectedFinding.evidence_citation}
                 </p>

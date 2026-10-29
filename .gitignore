@@ -75,8 +75,11 @@ dmypy.json
 *.manifest
 *.spec
 
-# ---------------- Next.js / Node -----------------------
+# ---------------- Next.js / TanStack Start / Node ------
 frontend/node_modules/
+frontend/.output/
+frontend/.nitro/
+frontend/.wrangler/
 frontend/.next/
 frontend/out/
 frontend/build/

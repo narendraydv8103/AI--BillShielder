@@ -161,14 +161,13 @@ function Index() {
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold tracking-widest text-primary uppercase">
               <Sparkles className="size-3.5" />
-              Statutory Healthcare Audit for India
+              Healthcare Bill Audit & Discrepancy Detection
             </span>
             <h1 className="mt-6 text-5xl font-extrabold leading-[1.05] tracking-tight text-primary lg:text-6xl">
               Know what every rupee on your hospital bill is for.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed">
-              Upload an itemized bill. BillShielder cross-references 37 statutory government rate
-              caps, unbundled ICU overheads, duplicate tests, and non-payables — then produces an evidence-backed dispute letter.
+              Upload an itemized bill. BillShielder evaluates 10 executable audit checks grounded in 37 catalogued regulatory benchmarks (CGHS, NPPA, IRDAI) to flag arithmetic errors, unbundled charges, and rate variances.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <button
@@ -213,7 +212,7 @@ function Index() {
               ₹45,000
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Calculated statutory overcharges identified by rule engine
+              Calculated discrepancies identified against published reference benchmarks
             </p>
             <ul className="mt-6 divide-y divide-border">
               {heroFindings.map((f) => (
@@ -328,7 +327,7 @@ function Index() {
             A sample audit
           </h2>
           <p className="mt-4 max-w-2xl text-muted-foreground">
-            ICU bill from the built-in demo set. Amounts above the statutory benchmark are shown as the excess.
+            ICU bill from the built-in demo set. Amounts above reference benchmarks are shown as the review excess.
           </p>
           <div className="mt-8 overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
             <table className="w-full min-w-[760px] text-left text-sm">

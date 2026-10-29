@@ -40,38 +40,38 @@ class ReportGeneratorService:
         table_md = "\n".join(rows_md)
         table_html = "\n".join(rows_html)
 
-        markdown_content = f"""# FORMAL NOTICE FOR ITEM-WISE BILL AUDIT & RECTIFICATION
+        markdown_content = f"""# REQUEST FOR ITEMIZED BILLING CLARIFICATION & REVIEW
 
 **Date:** {now_str}  
 **To:** {request.recipient_title}  
 **Hospital:** {hospital_name}  
 
-**Subject:** Request for formal review, recalculation, and deduction of unbundled charges, tariff ceiling overages, and arithmetic discrepancies in Invoice #{bill_no} for Patient **{patient_name}**.
+**Subject:** Request for itemized clarification and review of identified billing discrepancies in Invoice #{bill_no} for Patient **{patient_name}**.
 
 ---
 
 Dear Sir/Madam,
 
-I am writing to formally request an itemized review and rectification of charges on Invoice **#{bill_no}** issued to **{patient_name}**.
+I am writing to respectfully request an itemized review and clarification of charges on Invoice **#{bill_no}** issued to **{patient_name}**.
 
-Following an objective regulatory review against standards established by the **Ministry of Health & Family Welfare (MoHFW)**, the **National Pharmaceutical Pricing Authority (NPPA)**, the **Insurance Regulatory and Development Authority of India (IRDAI)**, and the **Central Goods & Services Tax Act 2017**, we have identified **{report.findings_count} discrepancies** totaling **₹{report.potential_savings:,.2f}** requiring immediate resolution.
+An algorithmic review comparing invoice entries against reference benchmarks established by the **Ministry of Health & Family Welfare (MoHFW)**, the **National Pharmaceutical Pricing Authority (NPPA)**, the **Insurance Regulatory and Development Authority of India (IRDAI)**, and relevant circulars identified **{report.findings_count} item(s)** totaling **₹{report.potential_savings:,.2f}** that warrant clarification.
 
 ### Audit Summary
 - **Total Billed Amount:** ₹{report.total_billed:,.2f}
-- **Permissible Benchmark Total:** ₹{report.total_permissible:,.2f}
-- **Potential Overcharge / Clarification Amount:** ₹{report.potential_savings:,.2f}
+- **Benchmark Reference Total:** ₹{report.total_permissible:,.2f}
+- **Amount Flagged for Clarification & Review:** ₹{report.potential_savings:,.2f}
 
 ### Schedule of Discrepancies
-| S.No | Item Description | Billed Amount | Permissible Rate | Excess / Disputed | Category | Legal / Statutory Authority |
+| S.No | Item Description | Billed Amount | Reference Benchmark | Review Discrepancy | Category | Regulatory / Benchmark Reference |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 {table_md}
 
-### Inquiries & Specific Clarifications Requested:
-1. **Unbundled Administrative Surcharges:** Charges for biomedical waste management, admission file creation, and equipment rent in intensive care beds are mandated to be included in general institutional overheads. Please rectify or credit these line items.
-2. **Statutory Tariff Ceilings:** Certain consumables (PPE kits, surgical gloves) and critical care bed charges exceed notified ceiling limits. Kindly align billing rates to notified rates under the Clinical Establishments Act and NPPA notifications.
-3. **Duplicate & Arithmetic Verification:** Please provide the corresponding time-stamped clinical notes, nursing administration records, and diagnostic requisition logs for repeated entries.
+### Itemized Clarifications Requested:
+1. **Institutional Overheads:** Certain items (such as biomedical waste disposal, administrative file charges, or equipment rentals in critical care) are standardly bundled into general room or procedure tariffs. Please review these line items.
+2. **Reference Benchmarks:** Charges for consumables and bed tariffs exceeding published benchmarks have been flagged for verification against the hospital's published tariff schedule.
+3. **Duplicate & Arithmetic Verification:** If any services were repeated, please share corresponding nursing logs or time-stamped records to confirm individual administration.
 
-We request your prompt rectification of the aforementioned amounts before final settlement. In the event of non-resolution, we reserve the right to seek formal redressal before the State Clinical Establishments Authority and the Consumer Redressal Forum.
+We appreciate your cooperation in providing itemized clarification. Please note that this request represents an informed consumer inquiry based on reference benchmarks and does not constitute formal legal advice.
 
 Sincerely,  
 **{patient_name}** / Patient Representative  
@@ -82,7 +82,7 @@ Contact: {request.patient_address or "As per Hospital Registration Records"}
 <html>
 <head>
 <meta charset="utf-8">
-<title>Formal Notice for Bill Audit & Rectification - {bill_no}</title>
+<title>Request for Itemized Billing Clarification & Review - {bill_no}</title>
 <style>
   body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.5; padding: 40px; background: #fff; }}
   .header {{ border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 25px; }}
